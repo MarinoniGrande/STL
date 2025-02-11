@@ -52,7 +52,7 @@ def configurar_reprodutibilidade():
     Função que seta todas as variáveis de reprodutibilidade, se a flag estiver ativa nas configurações
     :return: status da configuração
     """
-    print('Configurando repdutibilidade')
+    print('Configurando reprodutibilidade')
     if not get_padrao('SEEDS.IS_ALEATORIO'):
 
         os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'

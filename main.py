@@ -2,7 +2,7 @@ import os
 import sys
 import BO.util.util
 from BO.base.base import Base
-import tensorflow as tf
+
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 BO.util.util.ARQUIVO_CONFIGURACOES = sys.argv[1]
 

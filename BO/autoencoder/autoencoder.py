@@ -1,5 +1,8 @@
-from tensorflow.python.keras import layers, models
-from keras._tf_keras.keras.models import model_from_json
+# from tensorflow.python.keras import layers, models
+# from tensorflow.python.keras.models import model_from_json
+import io
+from tensorflow.keras import layers, models
+from tensorflow.keras.models import model_from_json
 
 from BO.autoencoder.configuracao import AutoencoderConfiguracao
 from BO.util.util import get_padrao
@@ -32,13 +35,27 @@ class Autoencoder(AutoencoderConfiguracao):
 
         self.autoencoder.save_weights(f"{nm_arquivo}.weights.h5")
 
+        summary_io = io.StringIO()
+        summary_io.write("========== ENCODER ==========\n")
+        self.encoder.summary(print_fn=lambda x: summary_io.write(x + "\n"))
+        summary_io.write("========== DECODER ==========\n")
+        self.decoder.summary(print_fn=lambda x: summary_io.write(x + "\n"))
+        summary_io.write("========== AUTOENCODER ==========\n")
+        self.autoencoder.summary(print_fn=lambda x: summary_io.write(x + "\n"))
+        summary_text = summary_io.getvalue()
+        summary_io.close()
+        lines = summary_text.split("\n")
+        with open(f"{nm_arquivo}_configuracoes.txt", "w", encoding='utf-8') as f:
+            for l in lines:
+                f.write(l + '\n')
+
         nm_arquivo = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/encoder_{str(self.id).zfill(3)}"
         with open(f"{nm_arquivo}.json", "w") as json_file:
             json_file.write(self.encoder.to_json())
 
         self.encoder.save_weights(f"{nm_arquivo}.weights.h5")
 
-        with open(f"{nm_arquivo}.txt", 'w') as f:
+        with open(f"{nm_arquivo}.txt", 'w', encoding='utf-8') as f:
             f.write(f'AUTOENCODER {self.id}\n')
             f.write(f'SEED: {str(self.seed)}\n')
             f.write(f'LATENTE: {str(self.latente)}\n')
@@ -67,10 +84,10 @@ class Autoencoder(AutoencoderConfiguracao):
 
         self.autoencoder = models.Sequential([self.encoder, self.decoder])
 
+        self.treinar()
+
         if get_padrao('DEBUG'):
             self.autoencoder.summary()
-
-        self.treinar()
 
         self.salvar()
 
@@ -108,7 +125,7 @@ class Autoencoder(AutoencoderConfiguracao):
         :return: Encoder criado
         """
         self.encoder = models.Sequential()
-        self.encoder.add(layers.InputLayer(shape=self.input_shape))
+        self.encoder.add(layers.InputLayer(input_shape=self.input_shape))
         for camada in range(0, self.nr_layers):
             self.encoder.add(
                 layers.Conv2D(filters=self.filtros[camada], kernel_size=self.kernel_size, activation=self.activation,
@@ -136,7 +153,7 @@ class Autoencoder(AutoencoderConfiguracao):
         """
         altura, largura = self.calcular_saida_encoder()
         self.decoder = models.Sequential()
-        self.decoder.add(layers.Input(shape=(self.latente,)))
+        self.decoder.add(layers.InputLayer(input_shape=(self.latente,)))
         self.decoder.add(
             layers.Dense(units=self.filtros[self.nr_layers - 1] * altura * largura, activation=self.activation))
         self.decoder.add(layers.Reshape((altura, largura, self.filtros[self.nr_layers - 1])))
