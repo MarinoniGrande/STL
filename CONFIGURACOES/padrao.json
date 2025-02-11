@@ -1,0 +1,92 @@
+{
+  "DEBUG": true,
+  "SEEDS": {
+    "IS_ALEATORIO": false,
+    "BASE": 42,
+    "CLASSIFICADOR": 42,
+    "RANDOM": 42,
+    "NUMPY": 42,
+    "TENSORFLOW": 42,
+    "OPENCV": 42,
+    "KERAS": 42
+  },
+  "BASE": {
+    "LABELS": [
+      "Normal",
+      "Kidney_stone"
+    ],
+    "INPUT_SHAPE": [
+      96,
+      96,
+      1
+    ],
+    "DIRETORIO_TREINO": "KYOTO",
+    "DIRETORIO_FINETUNNING": "A",
+    "DIRETORIO_ALVO_TREINO": "A",
+    "DIRETORIO_ALVO_TESTE": "B",
+    "IS_DIRETORIO_AEC_SEPARADO": false,
+    "IS_DIRETORIO_FINETUNNING_SEPARADO": true,
+    "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
+    "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
+  },
+  "AUTOENCODER": {
+    "SEED_PADRAO": 42,
+    "SEED_RANDOM_INI": 0,
+    "SEED_RANDOM_FIM": 10000,
+    "VETOR_LATENTE_PADRAO": 500,
+    "VETOR_LATENTE_RANDOM_INI": 100,
+    "VETOR_LATENTE_RANDOM_FIM": 5000,
+    "LAYERS_RANDOM_INI": 2,
+    "LAYERS_RANDOM_FIM": 10,
+    "LAYERS_RANDOM": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "EPOCAS_RANDOM_INI": 200,
+    "EPOCAS_RANDOM_FIM": 400,
+    "NR_LAYERS_PADRAO": 5,
+    "FILTROS_PADRAO": [
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "KERNEL_SIZE_PADRAO": [
+      3,
+      3
+    ],
+    "ACTIVATION_PADRAO": "relu",
+    "STRIDES_PADRAO": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "PADDING_PADRAO": "same",
+    "KERNEL_INITIALIZER_PADRAO": "he_uniform",
+    "OUTPUT_ACTIVATION_PADRAO": "linear",
+    "EPOCAS_PADRAO": 250
+  },
+  "POOL": {
+    "QUANTIDADE": 5,
+    "MODELAGEM": "SLA",
+    "FUNCAO_CUSTO_OFFLINE": "GGCA",
+    "VALOR_CUSTO_THRESHOLD": 0.95,
+    "FUNCAO_CUSTO_ONLINE": "SSIM",
+    "QTD_IMAGENS_RECONSTRUCAO": 8
+  },
+  "CLASSIFICADOR": {
+    "QTD_ESTIMATORS": 100,
+    "ESTIMADOR": "DECISIONTREE",
+    "CLASSIFICADOR": "RANDOMFOREST",
+    "ESTRATEGIA": "MULTI"
+  }
+}
