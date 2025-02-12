@@ -7,11 +7,12 @@ import datetime
 import shutil
 
 ARQUIVO_CONFIGURACOES = 'padrao.json'
-NOME_PROCESSO = datetime.datetime.now().strftime("%Y_%M_%d_%H_%M_%S")
+NOME_PROCESSO = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 def criar_processo():
     os.makedirs(f'RESULTADOS/{NOME_PROCESSO}/', exist_ok=True)
     os.makedirs(f'RESULTADOS/{NOME_PROCESSO}/POOL/', exist_ok=True)
+    os.makedirs(f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/', exist_ok=True)
     shutil.copy(f'CONFIGURACOES/{ARQUIVO_CONFIGURACOES}.json', f'RESULTADOS/{NOME_PROCESSO}/configuracoes.json')
 
 

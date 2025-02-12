@@ -3,10 +3,12 @@ from mvlearn.embed import GCCA
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
+import os
 
+from tensorflow.keras.callbacks import EarlyStopping
 from BO.util.util import get_padrao, NOME_PROCESSO
 from BO.autoencoder.autoencoder import Autoencoder
-
+from BO.base.base import Base
 
 class Pool:
     def __init__(self, qtd_autoencoders=None, base=None, input_shape=None, tipo_custo_offline=None,
@@ -58,6 +60,9 @@ class Pool:
 
             self.pool.append(Autoencoder(id=aec, input_shape=self.input_shape, base=self.base, modelagem=self.modelagem).criar())
 
+        if get_padrao('POOL.IS_FINETUNING'):
+           self.aplicar_finetunning()
+
         return self.pool
 
     def carregar_pool(self, tipo='autoencoder', is_finetunning=False):
@@ -69,12 +74,12 @@ class Pool:
         for aec in range(self.qtd_autoencoders):
             if get_padrao('DEBUG'):
                 print(f'Carregando {tipo} {aec}')
-            if is_finetunning:
-                diretorio = f"{self.diretorio}/FINETUNNING/{get_padrao('BASE.FINETUNNING')}"
+            if get_padrao('POOL.IS_FINETUNNING'):
+                diretorio = f"{self.diretorio}/FINETUNNING/{get_padrao('BASE.DIRETORIO_FINETUNNING')}"
             else:
                 diretorio = self.diretorio
-            self.pool.append(Autoencoder(id=aec).carregar_model(json_path=f'{self.diretorio}/{tipo}_{str(aec).zfill(3)}.json',
-                                                                weights_path=f'{diretorio}/{tipo}_{str(aec).zfill(3)}.weights.h5', tipo=tipo))
+            self.pool.append(Autoencoder(id=aec).carregar_model(json_path=f'{self.diretorio}/{str(aec).zfill(3)}/{tipo}.json',
+                                                                weights_path=f'{diretorio}/{str(aec).zfill(3)}/{tipo}.weights.h5', tipo=tipo))
 
         return True
 
@@ -130,7 +135,7 @@ class Pool:
             if p.id in encoders_filtrados:
                 self.pool_filtrado.append(p)
 
-        with open(f"RESULTADOS/{NOME_PROCESSO}/POOL/resultados.txt", "w", encoding='utf-8') as f:
+        with open(f"RESULTADOS/{NOME_PROCESSO}/POOL/configuracoes.txt", "w", encoding='utf-8') as f:
             f.write(f'Tamanho Pool Original: {len(self.pool)} \n')
             f.write(f'Tamanho Pool Filtrado: {len(self.pool_filtrado)} \n')
 
@@ -179,7 +184,40 @@ class Pool:
 
         return self.imagens_reconstrucao
 
-    def aplicar_finetuning(self, x_target=None):
+    def aplicar_finetunning(self):
+        base_finetunning = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_FINETUNNING_SEPARADO'), diretorio=f"BASE/{get_padrao('BASE.DIRETORIO_FINETUNNING')}")
+        _ , _ = base_finetunning.carregar()
+        _ = base_finetunning.split_base_validacao()
+        x_fine = tf.reshape(base_finetunning.x_train, (-1,) + base_finetunning.x_train[0].shape)
+        x_val = tf.reshape(base_finetunning.x_val, (-1,) + base_finetunning.x_val[0].shape)
+        early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+        for aec in self.pool:
+            print(f"FINETUNNING ENCODER: {aec.id}")
+            latent_fine = aec.encoder.predict(x_fine)
+            latent_val = aec.encoder.predict(x_val)
+            aec.encoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), loss="mse", metrics=["mae"])
+            historico = aec.encoder.fit(x_fine, latent_fine, validation_data=(x_val, latent_val), epochs=get_padrao('POOL.FINETUNNING_QTD_EPOCAS'), batch_size=32, shuffle=True, callbacks=[early_stopping])
+            nm_diretorio = f"{self.diretorio}/FINETUNNING/{get_padrao('BASE.DIRETORIO_FINETUNNING')}/{str(aec.id).zfill(3)}"
+            os.makedirs(nm_diretorio)
+            aec.encoder.save_weights(f"{nm_diretorio}/encoder.weights.h5")
+
+            if get_padrao('DEBUG'):
+                train_loss = historico.history["loss"]
+                val_loss = historico.history["val_loss"]  # Only if using validation data
+
+                plt.figure(figsize=(8, 6))
+                plt.plot(train_loss, label="Train Loss", color="blue")
+                plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")
+                plt.xlabel("Epochs")
+                plt.ylabel("Loss")
+                plt.title("Autoencoder Loss")
+                plt.legend()
+                plt.grid()
+
+                plt.savefig(f"{nm_diretorio}/loss.png", bbox_inches="tight")
+
+    def aplicar_finetuning_old(self, x_target=None):
         """
         Essa função aplica o finetuning no pool de autoencoders de uma base alvo e salva o encoder em formato .npy
         :param x_target: Base alvo do finetuning
@@ -246,7 +284,6 @@ class Pool:
             plt.xlabel('Componente 1')
             plt.ylabel('Componente 2')
             plt.grid(True)
-            #plt.show()
             plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/POOL/modelos.png')
 
         return True
