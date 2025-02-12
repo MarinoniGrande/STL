@@ -6,6 +6,9 @@ from BO.base.base import Base
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 BO.util.util.ARQUIVO_CONFIGURACOES = sys.argv[1]
 
+
+BO.util.util.criar_processo()
+
 BO.util.util.configurar_reprodutibilidade()
 
 
@@ -27,6 +30,7 @@ _ = pool.criar()
 
 
 # Carregar um pool ja existente a partir de uma base
+# from BO.pool.pool import Pool
 # pool = Pool(base=base)
 # _ = pool.carregar_pool(tipo='encoder')
 # pool.aplicar_funcao_custo_offline()
@@ -41,7 +45,7 @@ _ = pool.criar()
 #     #"/content/drive/MyDrive/Mestrado/autoencoders/kyoto/sl",
 #     # "/content/drive/MyDrive/Mestrado/autoencoders/kyoto/la",
 #     # "/content/drive/MyDrive/Mestrado/autoencoders/kyoto/sa",
-#     "/content/drive/MyDrive/Mestrado/AEC/KYOTO/SLA",
+#     "/content/drive/MyDrive/Mestrado/AEC/KYOTO/SLA-5-3-2",
 # ]:
 #   print(f'POOL: {d}')
 #   pool = None
@@ -70,7 +74,7 @@ _ = pool.criar()
 #     #"/content/drive/MyDrive/Mestrado/autoencoders/kyoto/sl",
 #     # "/content/drive/MyDrive/Mestrado/autoencoders/kyoto/la",
 #     # "/content/drive/MyDrive/Mestrado/autoencoders/kyoto/sa",
-#     "/content/drive/MyDrive/Mestrado/AEC/KYOTO/SLA"
+#     "/content/drive/MyDrive/Mestrado/AEC/KYOTO/SLA-5-3-2"
 # ]:
 #   print(d)
 #   pool = Pool(base=base, diretorio=d)

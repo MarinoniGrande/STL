@@ -1,6 +1,9 @@
 # from tensorflow.python.keras import layers, models
 # from tensorflow.python.keras.models import model_from_json
 import io
+import os
+import matplotlib.pyplot as plt
+
 from tensorflow.keras import layers, models
 from tensorflow.keras.models import model_from_json
 
@@ -20,16 +23,20 @@ class Autoencoder(AutoencoderConfiguracao):
         super().__init__(modelagem=modelagem, input_shape=input_shape)
         self.base = base
         self.id = id
+        self.diretorio = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
 
     def salvar(self):
         """
         Função utilizada para salvar o autoencoder, encoder e informações do encoder em arquivos
         :return: Status de Salvamento (Sempre True)
         """
+        diretorio = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
+        os.makedirs(diretorio, exist_ok=True)
+
         if get_padrao('DEBUG'):
             print(f'Salvando autoencoder {self.id}')
 
-        nm_arquivo = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/autoencoder_{str(self.id).zfill(3)}"
+        nm_arquivo = f'{diretorio}/autoencoder'
         with open(f"{nm_arquivo}.json", "w") as json_file:
             json_file.write(self.autoencoder.to_json())
 
@@ -45,11 +52,11 @@ class Autoencoder(AutoencoderConfiguracao):
         summary_text = summary_io.getvalue()
         summary_io.close()
         lines = summary_text.split("\n")
-        with open(f"{nm_arquivo}_configuracoes.txt", "w", encoding='utf-8') as f:
+        with open(f"{diretorio}/sumarios.txt", "w", encoding='utf-8') as f:
             for l in lines:
                 f.write(l + '\n')
 
-        nm_arquivo = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/encoder_{str(self.id).zfill(3)}"
+        nm_arquivo = f"{diretorio}/encoder"
         with open(f"{nm_arquivo}.json", "w") as json_file:
             json_file.write(self.encoder.to_json())
 
@@ -76,6 +83,8 @@ class Autoencoder(AutoencoderConfiguracao):
         Função que cria um autoencoder, onde cada etapa é uma função separada
         :return: Autoencoder criado
         """
+        self.criar_diretorio()
+
         self.atualizar_modelagem()
 
         self.criar_encoder()
@@ -93,14 +102,37 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self
 
+    def criar_diretorio(self):
+        """
+        Função responsável por criar o diretório do autoencoder a ser gerado
+        :return: Status de criação (Sempre true)
+        """
+        os.makedirs(self.diretorio, exist_ok=True)
+
     def treinar(self):
         """
         Função responsável pelo treinamento do autoencoder
         :return: Status de treinamento (Sempre True)
         """
         self.autoencoder.compile(optimizer='adam', loss='mse')
-        self.autoencoder.fit(self.base.x_train, self.base.x_train, epochs=self.qtd_epocas, batch_size=64, shuffle=True,
+        historico = self.autoencoder.fit(self.base.x_train, self.base.x_train, epochs=self.qtd_epocas, batch_size=64, shuffle=True,
                              validation_data=(self.base.x_test, self.base.x_test))
+
+        if get_padrao('DEBUG'):
+            train_loss = historico.history["loss"]
+            val_loss = historico.history["val_loss"]  # Only if using validation data
+
+            plt.figure(figsize=(8, 6))
+            plt.plot(train_loss, label="Train Loss", color="blue")
+            plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")  # If validation is used
+            plt.xlabel("Epochs")
+            plt.ylabel("Loss")
+            plt.title("Autoencoder Loss")
+            plt.legend()
+            plt.grid()
+
+            plt.savefig(f"{self.diretorio}/loss.png", bbox_inches="tight")
+            #plt.show()
 
         return True
 

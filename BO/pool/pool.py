@@ -4,7 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-from BO.util.util import get_padrao
+from BO.util.util import get_padrao, NOME_PROCESSO
 from BO.autoencoder.autoencoder import Autoencoder
 
 
@@ -120,7 +120,7 @@ class Pool:
 
         self.pool = pool_novo
 
-        if self.tipo_custo_offline == 'gcca':
+        if self.tipo_custo_offline == 'GCCA':
             resultado, encoders_filtrados = self.aplicar_gcca_offline(lista_modelos=lista_modelos)
         else:
             resultado, encoders_filtrados = lista_modelos, [x.id for x in self.pool]
@@ -129,6 +129,10 @@ class Pool:
         for p in self.pool:
             if p.id in encoders_filtrados:
                 self.pool_filtrado.append(p)
+
+        with open(f"RESULTADOS/{NOME_PROCESSO}/POOL/resultados.txt", "w", encoding='utf-8') as f:
+            f.write(f'Tamanho Pool Original: {len(self.pool)} \n')
+            f.write(f'Tamanho Pool Filtrado: {len(self.pool_filtrado)} \n')
 
         self.visualizar_grafico_pool(resultado=resultado, encoders_filtrados=encoders_filtrados)
 
@@ -141,7 +145,7 @@ class Pool:
         :return: Lista de modelos aplicado o GCCA, Lista de autoencoder que sobraram após a aplicação do GCCA
         """
         self.pool_filtrado = []
-        threshold_similaridade = get_padrao('POOL_CUSTO_THRESHOLD')
+        threshold_similaridade = get_padrao('POOL.VALOR_CUSTO_THRESHOLD')
 
         gcca = GCCA(n_components=2)
         gcca.fit(lista_modelos)
@@ -242,6 +246,7 @@ class Pool:
             plt.xlabel('Componente 1')
             plt.ylabel('Componente 2')
             plt.grid(True)
-            plt.show()
+            #plt.show()
+            plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/POOL/modelos.png')
 
         return True
