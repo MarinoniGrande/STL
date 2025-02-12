@@ -2,13 +2,13 @@
   "DEBUG": true,
   "SEEDS": {
     "IS_ALEATORIO": false,
-    "BASE": 42,
-    "CLASSIFICADOR": 42,
-    "RANDOM": 42,
-    "NUMPY": 42,
-    "TENSORFLOW": 42,
-    "OPENCV": 42,
-    "KERAS": 42
+    "BASE": 19,
+    "CLASSIFICADOR": 19,
+    "RANDOM": 19,
+    "NUMPY": 19,
+    "TENSORFLOW": 19,
+    "OPENCV": 19,
+    "KERAS": 19
   },
   "BASE": {
     "LABELS": [
@@ -48,8 +48,8 @@
       128,
       256
     ],
-    "EPOCAS_RANDOM_INI": 200,
-    "EPOCAS_RANDOM_FIM": 400,
+    "EPOCAS_RANDOM_INI": 300,
+    "EPOCAS_RANDOM_FIM": 500,
     "NR_LAYERS_PADRAO": 5,
     "FILTROS_PADRAO": [
       16,
@@ -77,11 +77,12 @@
   },
   "POOL": {
     "IS_FINETUNNING": true,
-    "FINETUNNING_QTD_EPOCAS": 150,
+    "FINETUNNING_QTD_EPOCAS": 100,
     "QUANTIDADE": 10,
     "MODELAGEM": "SLA",
     "FUNCAO_CUSTO_OFFLINE": "GCCA",
-    "VALOR_CUSTO_THRESHOLD": 0.85,
+    "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.85,
+    "VALOR_CUSTO_THRESHOLD_ONLINE": 0.1,
     "FUNCAO_CUSTO_ONLINE": "SSIM",
     "QTD_IMAGENS_RECONSTRUCAO": 8
   },

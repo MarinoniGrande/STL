@@ -32,7 +32,7 @@ class AutoencoderConfiguracao:
 
     def atualizar_modelagem(self):
         """
-        Função para atualizar os dados do autoencoder baseado na sua modelagem (SLA-5-3-2)
+        Função para atualizar os dados do autoencoder baseado na sua modelagem (SLA)
         :return: Status de atualização
         """
         # MODELAGEM 'S'

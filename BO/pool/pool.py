@@ -6,9 +6,11 @@ from sklearn.decomposition import PCA
 import os
 
 from tensorflow.keras.callbacks import EarlyStopping
+import tensorflow.image as tf_img
 from BO.util.util import get_padrao, NOME_PROCESSO
 from BO.autoencoder.autoencoder import Autoencoder
 from BO.base.base import Base
+
 
 class Pool:
     def __init__(self, qtd_autoencoders=None, base=None, input_shape=None, tipo_custo_offline=None,
@@ -37,6 +39,7 @@ class Pool:
         self.imagens_reconstrucao = []
         self.pool = []
         self.pool_filtrado = []
+        self.qtd_erros = 0
 
     def limpar(self):
         """
@@ -53,19 +56,31 @@ class Pool:
         Função responsável pela criação de pool de autoencoders
         :return: Pool de autoencoders criados
         """
+        self.carregar_imagens_reconstrucao()
         self.limpar()
-        for aec in range(self.qtd_autoencoders):
+        contador = 0
+        self.qtd_erros = 0
+        while contador < self.qtd_autoencoders:
+        #for aec in range(self.qtd_autoencoders):
+            aec = contador
             if get_padrao('DEBUG'):
-                print(f'Criando Autoencoder {aec}')
+                print(f'Criando Autoencoder {aec}, erros: {self.qtd_erros}')
 
-            self.pool.append(Autoencoder(id=aec, input_shape=self.input_shape, base=self.base, modelagem=self.modelagem).criar())
+            autoencoder = Autoencoder(id=aec, input_shape=self.input_shape, base=self.base, modelagem=self.modelagem)
+            autoencoder.criar()
+            if self.aplicar_funcao_custo_online(autoencoder=autoencoder):
+                autoencoder.salvar()
+                contador += 1
+            else:
+                self.qtd_erros += 1
+
 
         if get_padrao('POOL.IS_FINETUNING'):
            self.aplicar_finetunning()
 
         return self.pool
 
-    def carregar_pool(self, tipo='autoencoder', is_finetunning=False):
+    def carregar_pool(self, tipo='autoencoder'):
         """
         Função responsável por carregar o pool de autoencoders
         :return: Status de carregamento (Sempre true)
@@ -83,11 +98,49 @@ class Pool:
 
         return True
 
-    def aplicar_funcao_custo_online(self):
+    def aplicar_funcao_custo_online(self, autoencoder=None):
         """
         Função que aplica a punição nos autoencoders para diminuir a quantidade na medida que vai criando os autoencoders
         """
-        pass
+        print('funcao custo online')
+        if self.tipo_custo_online == 'SSIM':
+            resultado = self.aplicar_ssim_online(autoencoder=autoencoder)
+        else:
+            resultado = True
+
+        return resultado
+
+    def aplicar_ssim_online(self, autoencoder=None):
+        contador = 0
+        imagens_reconstruidas = autoencoder.autoencoder.predict(self.imagens_reconstrucao)
+        soma_ssim = 0
+        for img in self.imagens_reconstrucao:
+            vlr_ssim = tf_img.ssim(imagens_reconstruidas[contador], img, max_val=1.0).numpy()
+            print(vlr_ssim)
+            soma_ssim += vlr_ssim
+            contador += 1
+
+        fig, axes = plt.subplots(len(self.imagens_reconstrucao), 2, figsize=(25, 25))
+        c = 0
+        for i in self.imagens_reconstrucao:
+            axes[c, 0].imshow(i)
+            axes[c, 0].set_title(f'Original')
+            axes[c, 0].axis('off')
+            c += 1
+
+        c = 0
+        for i in imagens_reconstruidas:
+            axes[c, 1].imshow(i)
+            axes[c, 1].set_title(f'Refeita')
+            axes[c, 1].axis('off')
+            c += 1
+
+
+        plt.show()
+
+        print(round(soma_ssim/len(self.imagens_reconstrucao),2), get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'))
+        return round(soma_ssim/len(self.imagens_reconstrucao),2) > get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
+
 
     def verificar_reconstrucao(self, predicoes=None):
         """
@@ -137,9 +190,10 @@ class Pool:
 
         with open(f"RESULTADOS/{NOME_PROCESSO}/POOL/configuracoes.txt", "w", encoding='utf-8') as f:
             f.write(f'Tamanho Pool Original: {len(self.pool)} \n')
-            f.write(f'Tamanho Pool Filtrado: {len(self.pool_filtrado)} \n')
+            f.write(f'Tamanho Pool após filtro de função offline: {len(self.pool_filtrado)} \n')
+            f.write(f'Quantidade de autoencoders filtrados pela função online: {self.qtd_erros}')
 
-        self.visualizar_grafico_pool(resultado=resultado, encoders_filtrados=encoders_filtrados)
+        self.salvar_grafico_pool(resultado=resultado, encoders_filtrados=encoders_filtrados)
 
         return True
 
@@ -150,7 +204,7 @@ class Pool:
         :return: Lista de modelos aplicado o GCCA, Lista de autoencoder que sobraram após a aplicação do GCCA
         """
         self.pool_filtrado = []
-        threshold_similaridade = get_padrao('POOL.VALOR_CUSTO_THRESHOLD')
+        threshold_similaridade = get_padrao('POOL.VALOR_CUSTO_THRESHOLD_OFFLINE')
 
         gcca = GCCA(n_components=2)
         gcca.fit(lista_modelos)
@@ -202,20 +256,19 @@ class Pool:
             os.makedirs(nm_diretorio)
             aec.encoder.save_weights(f"{nm_diretorio}/encoder.weights.h5")
 
-            if get_padrao('DEBUG'):
-                train_loss = historico.history["loss"]
-                val_loss = historico.history["val_loss"]  # Only if using validation data
+            train_loss = historico.history["loss"]
+            val_loss = historico.history["val_loss"]  # Only if using validation data
 
-                plt.figure(figsize=(8, 6))
-                plt.plot(train_loss, label="Train Loss", color="blue")
-                plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")
-                plt.xlabel("Epochs")
-                plt.ylabel("Loss")
-                plt.title("Autoencoder Loss")
-                plt.legend()
-                plt.grid()
+            plt.figure(figsize=(8, 6))
+            plt.plot(train_loss, label="Train Loss", color="blue")
+            plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")
+            plt.xlabel("Epochs")
+            plt.ylabel("Loss")
+            plt.title("Autoencoder Loss")
+            plt.legend()
+            plt.grid()
 
-                plt.savefig(f"{nm_diretorio}/loss.png", bbox_inches="tight")
+            plt.savefig(f"{nm_diretorio}/loss.png", bbox_inches="tight")
 
     def aplicar_finetuning_old(self, x_target=None):
         """
@@ -261,29 +314,28 @@ class Pool:
 
         return True
 
-    def visualizar_grafico_pool(self, resultado=None, encoders_filtrados=None):
+    def salvar_grafico_pool(self, resultado=None, encoders_filtrados=None):
         """
         Função utilizada para printar o resultado dos encoders após filtro do GCCA
         :param resultado: Modelos após a aplicação da base de reconstrução
         :param encoders_filtrados: Lista de ids de encoders filtrados
         :return: Status de plot (Sempre True)
         """
-        if get_padrao('DEBUG'):
-            pca = PCA(n_components=2)
-            model_2d = pca.fit_transform([embedding.flatten() for embedding in resultado])
+        pca = PCA(n_components=2)
+        model_2d = pca.fit_transform([embedding.flatten() for embedding in resultado])
 
-            plt.figure(figsize=(20, 18))
-            plt.scatter(model_2d[:, 0], model_2d[:, 1], c=np.arange(len(self.pool)), cmap='viridis', s=100)
-            contador = 0
-            for aec in self.pool:
-                plt.text(model_2d[contador, 0] + 0.01, model_2d[contador, 1] + 0.01, f'Model {aec.id}', fontsize=12,
-                         color='#000000' if aec.id in encoders_filtrados else '#FF0000')
-                contador += 1
+        plt.figure(figsize=(20, 18))
+        plt.scatter(model_2d[:, 0], model_2d[:, 1], c=np.arange(len(self.pool)), cmap='viridis', s=100)
+        contador = 0
+        for aec in self.pool:
+            plt.text(model_2d[contador, 0] + 0.01, model_2d[contador, 1] + 0.01, f'Model {aec.id}', fontsize=12,
+                     color='#000000' if aec.id in encoders_filtrados else '#FF0000')
+            contador += 1
 
-            plt.title('Representação dos Modelos')
-            plt.xlabel('Componente 1')
-            plt.ylabel('Componente 2')
-            plt.grid(True)
-            plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/POOL/modelos.png')
+        plt.title('Representação dos Modelos')
+        plt.xlabel('Componente 1')
+        plt.ylabel('Componente 2')
+        plt.grid(True)
+        plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/POOL/modelos.png')
 
         return True

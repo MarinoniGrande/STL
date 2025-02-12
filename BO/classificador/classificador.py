@@ -58,7 +58,7 @@ class Classificador:
         base_teste = tf.reshape(self.base_teste.x_test, (-1,) + self.base_teste.x_test[0].shape)
         rf_classifier = classificador
 
-        for autoencoder in self.pool:
+        for autoencoder in self.pool.pool:
             x_train_flat = np.array(self.base_treino.x_train)
             x_treino_encoded = autoencoder.encoder.predict(x_train_flat, batch_size=len(self.base_treino.x_train))
             rf_classifier.fit(x_treino_encoded, self.base_treino.y_train)

@@ -95,10 +95,10 @@ class Autoencoder(AutoencoderConfiguracao):
 
         self.treinar()
 
-        if get_padrao('DEBUG'):
-            self.autoencoder.summary()
+        # if get_padrao('DEBUG'):
+        #     self.autoencoder.summary()
 
-        self.salvar()
+        #self.salvar()
 
         return self
 
@@ -116,23 +116,21 @@ class Autoencoder(AutoencoderConfiguracao):
         """
         self.autoencoder.compile(optimizer='adam', loss='mse')
         historico = self.autoencoder.fit(self.base.x_train, self.base.x_train, epochs=self.qtd_epocas, batch_size=64, shuffle=True,
-                             validation_data=(self.base.x_test, self.base.x_test))
+                             validation_data=(self.base.x_test, self.base.x_test), verbose=0)
 
-        if get_padrao('DEBUG'):
-            train_loss = historico.history["loss"]
-            val_loss = historico.history["val_loss"]  # Only if using validation data
+        train_loss = historico.history["loss"]
+        val_loss = historico.history["val_loss"]
 
-            plt.figure(figsize=(8, 6))
-            plt.plot(train_loss, label="Train Loss", color="blue")
-            plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")  # If validation is used
-            plt.xlabel("Epochs")
-            plt.ylabel("Loss")
-            plt.title("Autoencoder Loss")
-            plt.legend()
-            plt.grid()
+        plt.figure(figsize=(8, 6))
+        plt.plot(train_loss, label="Train Loss", color="blue")
+        plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.title("Autoencoder Loss")
+        plt.legend()
+        plt.grid()
 
-            plt.savefig(f"{self.diretorio}/loss.png", bbox_inches="tight")
-            #plt.show()
+        plt.savefig(f"{self.diretorio}/loss.png", bbox_inches="tight")
 
         return True
 
@@ -157,7 +155,7 @@ class Autoencoder(AutoencoderConfiguracao):
         :return: Encoder criado
         """
         self.encoder = models.Sequential()
-        self.encoder.add(layers.InputLayer(input_shape=self.input_shape))
+        self.encoder.add(layers.InputLayer(shape=self.input_shape))
         for camada in range(0, self.nr_layers):
             self.encoder.add(
                 layers.Conv2D(filters=self.filtros[camada], kernel_size=self.kernel_size, activation=self.activation,
@@ -167,8 +165,8 @@ class Autoencoder(AutoencoderConfiguracao):
         self.encoder.add(layers.Flatten())
         self.encoder.add(layers.Dense(self.latente, activation=self.activation))
 
-        if get_padrao('DEBUG'):
-            self.encoder.summary()
+        # if get_padrao('DEBUG'):
+        #     self.encoder.summary()
 
         return self.encoder
 
@@ -185,7 +183,7 @@ class Autoencoder(AutoencoderConfiguracao):
         """
         altura, largura = self.calcular_saida_encoder()
         self.decoder = models.Sequential()
-        self.decoder.add(layers.InputLayer(input_shape=(self.latente,)))
+        self.decoder.add(layers.InputLayer(shape=(self.latente,)))
         self.decoder.add(
             layers.Dense(units=self.filtros[self.nr_layers - 1] * altura * largura, activation=self.activation))
         self.decoder.add(layers.Reshape((altura, largura, self.filtros[self.nr_layers - 1])))
@@ -200,8 +198,8 @@ class Autoencoder(AutoencoderConfiguracao):
         self.decoder.add(layers.Conv2D(filters=1, kernel_size=self.kernel_size, activation=self.output_activation,
                                        padding=self.padding))
 
-        if get_padrao('DEBUG'):
-            self.decoder.summary()
+        # if get_padrao('DEBUG'):
+        #     self.decoder.summary()
 
         return self.decoder
 
