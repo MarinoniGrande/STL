@@ -61,22 +61,25 @@ class Pool:
         contador = 0
         self.qtd_erros = 0
         while contador < self.qtd_autoencoders:
+            if contador > 14:
         #for aec in range(self.qtd_autoencoders):
-            aec = contador
-            if get_padrao('DEBUG'):
-                print(f'Criando Autoencoder {aec}, erros: {self.qtd_erros}')
+                aec = contador
+                if get_padrao('DEBUG'):
+                    print(f'Criando Autoencoder {aec}, erros: {self.qtd_erros}')
 
-            autoencoder = Autoencoder(id=aec, input_shape=self.input_shape, base=self.base, modelagem=self.modelagem)
-            autoencoder.criar()
-            if self.aplicar_funcao_custo_online(autoencoder=autoencoder):
-                autoencoder.salvar()
-                contador += 1
+                autoencoder = Autoencoder(id=aec, input_shape=self.input_shape, base=self.base, modelagem=self.modelagem)
+                autoencoder.criar()
+                if self.aplicar_funcao_custo_online(autoencoder=autoencoder):
+                    autoencoder.salvar()
+                    contador += 1
+                else:
+                    self.qtd_erros += 1
             else:
-                self.qtd_erros += 1
+                contador += 1
 
 
-        if get_padrao('POOL.IS_FINETUNING'):
-           self.aplicar_finetunning()
+        #if get_padrao('POOL.IS_FINNETUNING'):
+        #   self.aplicar_finetunning()
 
         return self.pool
 
