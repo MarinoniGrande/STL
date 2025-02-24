@@ -61,7 +61,7 @@ class Pool:
         contador = 0
         self.qtd_erros = 0
         while contador < self.qtd_autoencoders:
-            if contador > 14:
+            if 1==1:#contador > 14:
         #for aec in range(self.qtd_autoencoders):
                 aec = contador
                 if get_padrao('DEBUG'):
@@ -78,8 +78,8 @@ class Pool:
                 contador += 1
 
 
-        #if get_padrao('POOL.IS_FINNETUNING'):
-        #   self.aplicar_finetunning()
+        if get_padrao('POOL.IS_FINNETUNING'):
+          self.aplicar_finetunning()
 
         return self.pool
 
@@ -139,7 +139,7 @@ class Pool:
             c += 1
 
 
-        plt.show()
+        #plt.show()
 
         print(round(soma_ssim/len(self.imagens_reconstrucao),2), get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'))
         return round(soma_ssim/len(self.imagens_reconstrucao),2) > get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
@@ -313,7 +313,7 @@ class Pool:
                 axes[aec.id + 1, j].set_title(f'Reconstruida {j} (AEC {aec.id})')
                 axes[aec.id + 1, j].axis('off')
 
-        plt.show()
+        #plt.show()
 
         return True
 

@@ -18,16 +18,19 @@ BO.util.util.criar_processo(tipo=tipo)
 
 base = Base(is_normalizar=True, tipo='unlabeled', diretorio=f"BASE/{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}")
 _ , _ = base.carregar()
+try:
+    if tipo == 'criar':
+        _ = Pool(base=base).criar()
 
-if tipo == 'criar':
-    _ = Pool(base=base).criar()
+    elif tipo == 'classificar':
+        pool = Pool(base=base)
+        _ = pool.carregar_pool(tipo='encoder')
+        _ = pool.aplicar_funcao_custo_offline()
 
-elif tipo == 'classificar':
-    pool = Pool(base=base)
-    _ = pool.carregar_pool(tipo='encoder')
-    _ = pool.aplicar_funcao_custo_offline()
+        _ = Classificador(pool=pool).classificar()
 
-    _ = Classificador(pool=pool).classificar()
-
-else:
-    sys.exit(F"ERRO -3: TIPO NÃO DEFINIDO NO CÓDIGO: '{tipo}'")
+    else:
+        sys.exit(F"ERRO -3: TIPO NÃO DEFINIDO NO CÓDIGO: '{tipo}'")
+except Exception as e:
+    with open(f'RESULTADOS/{BO.util.util.NOME_PROCESSO}/erro.txt', 'w') as f:
+        f.write(str(e))
