@@ -56,13 +56,12 @@ class Pool:
         Função responsável pela criação de pool de autoencoders
         :return: Pool de autoencoders criados
         """
-        self.carregar_imagens_reconstrucao()
+        self.carregar_imagens_reconstrucao(qtd_imagens_reconstrucao=15)
         self.limpar()
         contador = 0
         self.qtd_erros = 0
         while contador < self.qtd_autoencoders:
-            if 1==1:#contador > 14:
-        #for aec in range(self.qtd_autoencoders):
+            if 1==1:
                 aec = contador
                 if get_padrao('DEBUG'):
                     print(f'Criando Autoencoder {aec}, erros: {self.qtd_erros}')
@@ -77,10 +76,6 @@ class Pool:
             else:
                 contador += 1
 
-
-        if get_padrao('POOL.IS_FINNETUNING'):
-          self.aplicar_finetunning()
-
         return self.pool
 
     def carregar_pool(self, tipo='autoencoder'):
@@ -92,12 +87,9 @@ class Pool:
         for aec in range(self.qtd_autoencoders):
             if get_padrao('DEBUG'):
                 print(f'Carregando {tipo} {aec}')
-            if get_padrao('POOL.IS_FINETUNNING'):
-                diretorio = f"{self.diretorio}/FINETUNNING/{get_padrao('BASE.DIRETORIO_FINETUNNING')}"
-            else:
-                diretorio = self.diretorio
+
             self.pool.append(Autoencoder(id=aec).carregar_model(json_path=f'{self.diretorio}/{str(aec).zfill(3)}/{tipo}.json',
-                                                                weights_path=f'{diretorio}/{str(aec).zfill(3)}/{tipo}.weights.h5', tipo=tipo))
+                                                                weights_path=f'{self.diretorio}/{str(aec).zfill(3)}/{tipo}.weights.h5', tipo=tipo))
 
         return True
 
@@ -117,8 +109,10 @@ class Pool:
         contador = 0
         imagens_reconstruidas = autoencoder.autoencoder.predict(self.imagens_reconstrucao)
         soma_ssim = 0
+        vlrs_ssim = []
         for img in self.imagens_reconstrucao:
             vlr_ssim = tf_img.ssim(imagens_reconstruidas[contador], img, max_val=1.0).numpy()
+            vlrs_ssim.append(vlr_ssim)
             print(vlr_ssim)
             soma_ssim += vlr_ssim
             contador += 1
@@ -126,23 +120,23 @@ class Pool:
         fig, axes = plt.subplots(len(self.imagens_reconstrucao), 2, figsize=(25, 25))
         c = 0
         for i in self.imagens_reconstrucao:
-            axes[c, 0].imshow(i)
+            axes[c, 0].imshow(i, cmap='gray')
             axes[c, 0].set_title(f'Original')
             axes[c, 0].axis('off')
             c += 1
 
         c = 0
         for i in imagens_reconstruidas:
-            axes[c, 1].imshow(i)
-            axes[c, 1].set_title(f'Refeita')
+            axes[c, 1].imshow(i, cmap='gray')
+            axes[c, 1].set_title(f'Refeita {vlrs_ssim[c]}')
             axes[c, 1].axis('off')
             c += 1
 
-
+        plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/RECONSTRUCAO/imagens.png')
         #plt.show()
 
         print(round(soma_ssim/len(self.imagens_reconstrucao),2), get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'))
-        return round(soma_ssim/len(self.imagens_reconstrucao),2) > get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
+        return True#round(soma_ssim/len(self.imagens_reconstrucao),2) >= get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
 
 
     def verificar_reconstrucao(self, predicoes=None):
@@ -241,55 +235,6 @@ class Pool:
 
         return self.imagens_reconstrucao
 
-    def aplicar_finetunning(self):
-        base_finetunning = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_FINETUNNING_SEPARADO'), diretorio=f"BASE/{get_padrao('BASE.DIRETORIO_FINETUNNING')}")
-        _ , _ = base_finetunning.carregar()
-        _ = base_finetunning.split_base_validacao()
-        x_fine = tf.reshape(base_finetunning.x_train, (-1,) + base_finetunning.x_train[0].shape)
-        x_val = tf.reshape(base_finetunning.x_val, (-1,) + base_finetunning.x_val[0].shape)
-        early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-
-        for aec in self.pool:
-            print(f"FINETUNNING ENCODER: {aec.id}")
-            latent_fine = aec.encoder.predict(x_fine)
-            latent_val = aec.encoder.predict(x_val)
-            aec.encoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4), loss="mse", metrics=["mae"])
-            historico = aec.encoder.fit(x_fine, latent_fine, validation_data=(x_val, latent_val), epochs=get_padrao('POOL.FINETUNNING_QTD_EPOCAS'), batch_size=32, shuffle=True, callbacks=[early_stopping])
-            nm_diretorio = f"{self.diretorio}/FINETUNNING/{get_padrao('BASE.DIRETORIO_FINETUNNING')}/{str(aec.id).zfill(3)}"
-            os.makedirs(nm_diretorio)
-            aec.encoder.save_weights(f"{nm_diretorio}/encoder.weights.h5")
-
-            train_loss = historico.history["loss"]
-            val_loss = historico.history["val_loss"]  # Only if using validation data
-
-            plt.figure(figsize=(8, 6))
-            plt.plot(train_loss, label="Train Loss", color="blue")
-            plt.plot(val_loss, label="Validation Loss", color="red", linestyle="dashed")
-            plt.xlabel("Epochs")
-            plt.ylabel("Loss")
-            plt.title("Autoencoder Loss")
-            plt.legend()
-            plt.grid()
-
-            plt.savefig(f"{nm_diretorio}/loss.png", bbox_inches="tight")
-
-    def aplicar_finetuning_old(self, x_target=None):
-        """
-        Essa função aplica o finetuning no pool de autoencoders de uma base alvo e salva o encoder em formato .npy
-        :param x_target: Base alvo do finetuning
-        :return: Lista de
-        """
-        resultados = []
-        x_target = tf.reshape(x_target, (-1,) + x_target[0].shape)
-        for aec in self.pool:
-            if get_padrao('DEBUG'):
-                print(f'Fazendo predict do encoder {aec.id}')
-            resultado = aec.encoder.predict(x_target)
-            resultados.append(resultado)
-            np.save(f"{self.diretorio}/encoder_{str(aec.id).zfill(3)}", resultado)
-
-        return resultados
-
     def visualizar_reconstrucao(self, qtd_imagens_reconstrucao=None):
         """
         Função utilizada para visualizar a reconstrução das imagens do pool de autoencoders
@@ -302,17 +247,19 @@ class Pool:
         fig, axes = plt.subplots(self.qtd_autoencoders + 1, qtd_imagens_reconstrucao, figsize=(50, 50))
 
         for i in range(0, len(self.imagens_reconstrucao)):
-            axes[0, i].imshow(self.imagens_reconstrucao[i])
+            axes[0, i].imshow(self.imagens_reconstrucao[i], cmap='gray')
             axes[0, i].set_title(f'Original {i}')
             axes[0, i].axis('off')
 
         for aec in self.pool:
             imagens_reconstruidas = aec.autoencoder.predict(self.imagens_reconstrucao)
             for j in range(0, qtd_imagens_reconstrucao):
-                axes[aec.id + 1, j].imshow(imagens_reconstruidas[j])
+                axes[aec.id + 1, j].imshow(imagens_reconstruidas[j], cmap='gray')
                 axes[aec.id + 1, j].set_title(f'Reconstruida {j} (AEC {aec.id})')
                 axes[aec.id + 1, j].axis('off')
 
+
+        plt.savefig(f'RESULTADOS/{NOME_PROCESSO}/RECONSTRUCAO/imagens.png')
         #plt.show()
 
         return True

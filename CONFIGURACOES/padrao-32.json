@@ -15,7 +15,7 @@
       "Normal",
       "Kidney_stone"
     ],
-    "INPUT_SHAPE": [64,64,3],
+    "INPUT_SHAPE": [32,32,1],
     "DIRETORIO_TREINO": "KYOTO",
     "DIRETORIO_FINETUNNING": "A",
     "DIRETORIO_ALVO_TREINO": "A",
@@ -29,7 +29,7 @@
     "SEED_PADRAO": 42,
     "SEED_RANDOM_INI": 0,
     "SEED_RANDOM_FIM": 10000,
-    "VETOR_LATENTE_PADRAO": 300,
+    "VETOR_LATENTE_PADRAO": 500,
     "VETOR_LATENTE_RANDOM_INI": 100,
     "VETOR_LATENTE_RANDOM_FIM": 5000,
     "LAYERS_RANDOM_INI": 2,
@@ -51,8 +51,7 @@
       16,
       32,
       64,
-      128,
-      256
+      128
     ],
     "KERNEL_SIZE_PADRAO": [
       3,
@@ -60,11 +59,10 @@
     ],
     "ACTIVATION_PADRAO": "relu",
     "STRIDES_PADRAO": [
-      1,
-      1,
-      1,
-      1,
-      1
+      2,
+      2,
+      2,
+      2
     ],
     "PADDING_PADRAO": "same",
     "KERNEL_INITIALIZER_PADRAO": "he_uniform",

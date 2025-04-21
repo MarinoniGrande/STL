@@ -52,39 +52,130 @@ class Classificador:
         return dict_estimators.get(self.estimator)
 
     def classificar(self):
-        classificador = self.get_classificador()
-        self.resultado = []
+        if self.classificador == 'CNN':
+            from tensorflow.keras import layers, models
+            for autoencoder in self.pool.pool:
+                autoencoder.encoder.trainable = True  # Freeze the encoder layers
 
-        base_teste = tf.reshape(self.base_teste.x_test, (-1,) + self.base_teste.x_test[0].shape)
-        rf_classifier = classificador
+                # Add new layers to the encoder
+                x = autoencoder.encoder.outputs[0]
+                x = layers.Dense(512, activation='relu')(x)
+                x = layers.Dense(256, activation='relu')(x)
+                x = layers.Dense(128, activation='relu')(x)
+                output = layers.Dense(2, activation='softmax', name="segundo_desnse")(x)  # Output layer with softmax for 2 classes
 
-        for autoencoder in self.pool.pool:
-            x_train_flat = np.array(self.base_treino.x_train)
-            x_treino_encoded = autoencoder.encoder.predict(x_train_flat, batch_size=len(self.base_treino.x_train))
-            rf_classifier.fit(x_treino_encoded, self.base_treino.y_train)
-            resultado = autoencoder.encoder.predict(base_teste)
-            predicoes = rf_classifier.predict_proba(resultado)
-            self.resultado.append(predicoes)
+                # Create the new model
+                new_model = models.Model(inputs=autoencoder.encoder.inputs[0], outputs=output)
 
-            labels_resultado = np.argmax(predicoes, axis=1)
-            cm = confusion_matrix(self.base_teste.y_test, labels_resultado)
+                # Compile the new model
+                new_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-            # Plot using seaborn
-            plt.figure(figsize=(8, 6))
-            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Normal', 'Kidney_stone'], yticklabels=['Normal', 'Kidney_stone'])
-            plt.xlabel("Predicted Label")
-            plt.ylabel("True Label")
-            plt.title(f"Matriz Confusão do Classificador {str(autoencoder.id).zfill(3)}")
+                # Print the new model summary
+                new_model.summary()
 
-            nm_diretorio = f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/{str(autoencoder.id).zfill(3)}'
-            os.makedirs(f'{nm_diretorio}', exist_ok=True)
-            plt.savefig(f'{nm_diretorio}/matriz.png')
-            with open(f"{nm_diretorio}/resultado.txt", "w") as file:
-                file.write(str(accuracy_score(self.base_teste.y_test, labels_resultado)))
+                base_teste = tf.reshape(self.base_teste.x_test, (-1,) + self.base_teste.x_test[0].shape)
+                x_train_flat = np.array(self.base_treino.x_train)
 
-        self.calcular_acuraria()
+                y_train_flat = tf.keras.utils.to_categorical(self.base_treino.y_train, num_classes=2)
+                new_model.fit(x_train_flat , y_train_flat, epochs=100)
 
-        return True
+                y_pred = new_model.predict(base_teste)
+
+                labels_resultado = np.argmax(y_pred, axis=1)
+                cm = confusion_matrix(self.base_teste.y_test, labels_resultado)
+
+                missed_indices = np.where(self.base_teste.y_test != labels_resultado)[0]
+                correct_indices = np.where(self.base_teste.y_test == labels_resultado)[0]
+
+                plt.figure(figsize=(20, 16))
+                for i in range(8):  # Show 5 missed images
+                    try:
+                        plt.subplot(4, 8, i + 1)
+                        plt.imshow(self.base_teste.x_test[missed_indices[i]].reshape(200, 200), cmap='gray')
+                        plt.title(f"True {i}:{self.base_teste.y_test[missed_indices[i]]}, Pred:{labels_resultado[missed_indices[i]]}")
+                    except:
+                        pass
+
+                for i in range(8):  # Show 5 missed images
+                    try:
+                        plt.subplot(4, 8, i + 9)
+                        plt.imshow(self.base_teste.x_test[missed_indices[::-1][i]].reshape(200, 200), cmap='gray')
+                        plt.title(f"True {i}:{self.base_teste.y_test[missed_indices[::-1][i]]}, Pred:{labels_resultado[missed_indices[::-1][i]]}")
+                    except:
+                        pass
+
+                for i in range(8):  # Show 5 correctly classified images
+                    try:
+                        plt.subplot(4, 8, i + 17)
+                        plt.imshow(self.base_teste.x_test[correct_indices[i]].reshape(200, 200), cmap='gray')
+                        plt.title(f"True {i}: {self.base_teste.y_test[correct_indices[i]]}, Pred:{labels_resultado[correct_indices[i]]}")
+                    except:
+                        pass
+
+                for i in range(8):  # Show 5 correctly classified images
+                    try:
+                        plt.subplot(4, 8, i + 25)
+                        plt.imshow(self.base_teste.x_test[correct_indices[::-1][i]].reshape(200, 200), cmap='gray')
+                        plt.title(
+                            f"True {i}: {self.base_teste.y_test[correct_indices[::-1][i]]}, Pred:{labels_resultado[correct_indices[::-1][i]]}")
+                    except:
+                        pass
+
+                plt.tight_layout()
+                plt.show()
+
+                # Plot using seaborn
+                plt.figure(figsize=(8, 6))
+                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Normal', 'Kidney_stone'],
+                            yticklabels=['Normal', 'Kidney_stone'])
+                plt.xlabel("Predicted Label")
+                plt.ylabel("True Label")
+                plt.title(f"Matriz Confusão do Classificador {str(autoencoder.id).zfill(3)}")
+
+                nm_diretorio = f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/{str(autoencoder.id).zfill(3)}'
+                os.makedirs(f'{nm_diretorio}', exist_ok=True)
+                plt.savefig(f'{nm_diretorio}/matriz.png')
+                with open(f"{nm_diretorio}/resultado.txt", "w") as file:
+                    file.write(str(accuracy_score(self.base_teste.y_test, labels_resultado)) + '\n')
+
+                    file.write(f"corretos: {str(correct_indices)}\n")
+                    file.write(f"incorretos: {str(missed_indices)}")
+
+
+        else:
+            classificador = self.get_classificador()
+            self.resultado = []
+
+            base_teste = tf.reshape(self.base_teste.x_test, (-1,) + self.base_teste.x_test[0].shape)
+            rf_classifier = classificador
+
+            for autoencoder in self.pool.pool:
+                x_train_flat = np.array(self.base_treino.x_train)
+                x_treino_encoded = autoencoder.encoder.predict(x_train_flat, batch_size=len(self.base_treino.x_train))
+                rf_classifier.fit(x_treino_encoded, self.base_treino.y_train)
+                resultado = autoencoder.encoder.predict(base_teste)
+                predicoes = rf_classifier.predict_proba(resultado)
+                self.resultado.append(predicoes)
+
+                labels_resultado = np.argmax(predicoes, axis=1)
+                cm = confusion_matrix(self.base_teste.y_test, labels_resultado)
+
+                # Plot using seaborn
+                plt.figure(figsize=(8, 6))
+                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Normal', 'Kidney_stone'], yticklabels=['Normal', 'Kidney_stone'])
+                plt.xlabel("Predicted Label")
+                plt.ylabel("True Label")
+                plt.title(f"Matriz Confusão do Classificador {str(autoencoder.id).zfill(3)}")
+
+                nm_diretorio = f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/{str(autoencoder.id).zfill(3)}'
+                os.makedirs(f'{nm_diretorio}', exist_ok=True)
+                plt.savefig(f'{nm_diretorio}/matriz.png')
+                with open(f"{nm_diretorio}/resultado.txt", "w") as file:
+                    file.write(str(accuracy_score(self.base_teste.y_test, labels_resultado)))
+
+            self.calcular_acuraria()
+
+            return True
 
     def calcular_acuraria(self):
         prod = np.product(self.resultado, axis=0)
