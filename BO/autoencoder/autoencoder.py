@@ -334,7 +334,7 @@ class Autoencoder(AutoencoderConfiguracao):
         """
         reshape = (self.encoder.layers[-2].input.shape[1], self.encoder.layers[-2].input.shape[2],
                    self.encoder.layers[-2].input.shape[3])
-
+        self.decoder = models.Sequential()
         self.decoder.add(layers.InputLayer(shape=(300,)))
         self.decoder.add(layers.Dense(units=reshape[0] * reshape[1] * reshape[2], activation='relu'))#encoder.layers[-1].input.shape[1], activation=activation))
         self.decoder.add(layers.Reshape(reshape))#encoder.layers[-2].input.shape[1:])))
