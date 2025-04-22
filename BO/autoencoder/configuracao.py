@@ -107,7 +107,7 @@ class AutoencoderConfiguracao:
         if get_padrao('DEBUG'):
             print(f'Nr. Layers: {self.nr_layers}')
             print(f'Filtros: {self.filtros}')
-            print(f'Kernel Size: {self.nr_layers}')
+            print(f'Kernel Size: {self.kernel_size}')
             print(f'Activation: {self.activation}')
             print(f'strides: {self.strides}')
             print(f'Padding: {self.padding}')

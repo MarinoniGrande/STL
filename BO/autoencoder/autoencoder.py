@@ -198,7 +198,7 @@ class Autoencoder(AutoencoderConfiguracao):
                               strides=self.strides[camada], padding=self.padding,
                               kernel_initializer=self.kernel_initializer))
         self.encoder.add(layers.BatchNormalization())
-        self.encoder.add(layers.ReLU())
+        self.encoder.add(layers.LeakyReLU(alpha=0.5))
         self.encoder.add(layers.Dropout(rate=0.3))
         self.encoder.add(layers.Flatten())
 
@@ -225,7 +225,7 @@ class Autoencoder(AutoencoderConfiguracao):
         reshape = (input_decoder.shape[1], input_decoder.shape[2], input_decoder.shape[3])
 
         self.decoder = models.Sequential()
-        self.decoder.add(layers.InputLayer(shape=(300,)))
+        self.decoder.add(layers.InputLayer(shape=(self.latente,)))
         self.decoder.add(layers.Dense(units=reshape[0] * reshape[1] * reshape[2],
                                  activation='relu'))
         self.decoder.add(layers.Reshape(reshape))
@@ -238,7 +238,7 @@ class Autoencoder(AutoencoderConfiguracao):
                                        kernel_initializer=self.kernel_initializer))
 
         self.decoder.add(layers.BatchNormalization())
-        self.decoder.add(layers.ReLU())
+        self.decoder.add(layers.LeakyReLU())
 
         self.decoder.add(layers.Conv2D(filters=self.input_shape[2], kernel_size=self.kernel_size, activation=self.output_activation,
                                        padding=self.padding))
