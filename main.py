@@ -12,6 +12,18 @@ from BO.pool.pool import Pool
 from BO.classificador.classificador import Classificador
 
 
+
+import tensorflow as tf
+
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(e)
+
+
 BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 
 BO.util.util.configurar_reprodutibilidade()
