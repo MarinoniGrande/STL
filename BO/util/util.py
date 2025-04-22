@@ -67,7 +67,6 @@ def configurar_reprodutibilidade():
     """
     print('Configurando reprodutibilidade')
     if not get_padrao('SEEDS.IS_ALEATORIO'):
-        os.environ["CUDA_VISIBLE_DEVICES"] = ""
         os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         os.environ['TF_CUDNN_DETERMINISTIC'] = 'true'
