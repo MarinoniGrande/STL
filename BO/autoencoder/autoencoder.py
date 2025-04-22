@@ -281,7 +281,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.encoder
 
-    def criar_decoder(self):
+    def criar_decoder_lu(self):
         """
         Função responsável em criar a segunda parte do autoencoder, o Decoder.
         Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
@@ -321,7 +321,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.decoder
 
-    def criar_decoder_espelho(self):
+    def criar_decoder(self):
         """
         Função responsável em criar a segunda parte do autoencoder, o Decoder.
         Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
@@ -332,12 +332,12 @@ class Autoencoder(AutoencoderConfiguracao):
         Por fim, é criado a cama de saída, com filtro de 1
         :return: Decoder criado
         """
-        altura, largura = self.calcular_saida_encoder()
-        self.decoder = models.Sequential()
+        reshape = (self.encoder.layers[-2].input.shape[1], self.encoder.layers[-2].input.shape[2],
+                   self.encoder.layers[-2].input.shape[3])
+
         self.decoder.add(layers.InputLayer(shape=(300,)))
-        self.decoder.add(layers.Dense(units=32 * 32 * 128,
-                                      activation='relu'))  # self.encoder.layers[-1].input.shape[1], activation=self.activation))
-        self.decoder.add(layers.Reshape((32, 32, 128)))  # self.encoder.layers[-2].input.shape[1:])))
+        self.decoder.add(layers.Dense(units=reshape[0] * reshape[1] * reshape[2], activation='relu'))#encoder.layers[-1].input.shape[1], activation=activation))
+        self.decoder.add(layers.Reshape(reshape))#encoder.layers[-2].input.shape[1:])))
 
         self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3, 3), padding='same', activation='relu'))
         self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3, 3), padding='same', activation='relu'))
