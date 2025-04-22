@@ -258,7 +258,7 @@ class Autoencoder(AutoencoderConfiguracao):
         :return: Encoder criado
         """
         self.encoder = models.Sequential()
-        self.encoder.add(layers.InputLayer(shape=(64, 64, 3)))
+        self.encoder.add(layers.InputLayer(shape=(96, 96, 1)))
         self.encoder.add(layers.Conv2D(filters=128, padding='same', kernel_size=(3, 3), activation='relu'))
         self.encoder.add(layers.Conv2D(filters=64, padding='same', kernel_size=(3, 3), activation='relu'))
         self.encoder.add(layers.MaxPooling2D((2, 2), padding='same'))
@@ -297,7 +297,7 @@ class Autoencoder(AutoencoderConfiguracao):
         self.decoder.add(layers.InputLayer(shape=(300,)))
         self.decoder.add(layers.Dense(units=65536,
                                       activation='relu'))  # self.encoder.layers[-1].input.shape[1], activation=self.activation))
-        self.decoder.add(layers.Reshape((32, 32, 64)))  # self.encoder.layers[-2].input.shape[1:])))
+        self.decoder.add(layers.Reshape((96, 96, 1)))  # self.encoder.layers[-2].input.shape[1:])))
 
         self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3, 3), padding='same', activation='relu'))
         self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3, 3), padding='same', activation='relu'))
