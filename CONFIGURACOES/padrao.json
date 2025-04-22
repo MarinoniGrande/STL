@@ -48,11 +48,7 @@
     "EPOCAS_RANDOM_FIM": 500,
     "NR_LAYERS_PADRAO": 5,
     "FILTROS_PADRAO": [
-      16,
-      32,
-      64,
-      128,
-      256
+      128, 64, 256, 64, 128
     ],
     "KERNEL_SIZE_PADRAO": [
       3,
