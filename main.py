@@ -29,7 +29,7 @@ BO.util.util.configurar_reprodutibilidade()
 
 BO.util.util.criar_processo(tipo=tipo)
 
-base = Base(is_normalizar=True, tipo='unlabeled', diretorio=f"BASES/{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}")
+base = Base(is_normalizar=True, tipo='unlabeled', diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}")
 _ , _ = base.carregar()
 
 try:
