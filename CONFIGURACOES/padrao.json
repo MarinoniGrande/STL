@@ -15,7 +15,7 @@
       "Normal",
       "Kidney_stone"
     ],
-    "INPUT_SHAPE": [64,64,3],
+    "INPUT_SHAPE": [224,224,3],
     "DIRETORIO_TREINO": "KYOTO",
     "DIRETORIO_FINETUNNING": "A",
     "DIRETORIO_ALVO_TREINO": "A",

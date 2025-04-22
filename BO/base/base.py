@@ -3,7 +3,8 @@ import random
 import cv2
 import numpy as np
 from sklearn.model_selection import train_test_split
-
+import torch
+from fastai.vision.all import TensorImage, Rotate, Zoom, RandomResizedCropGPU, Tensor
 from BO.util.util import get_padrao
 
 
@@ -102,33 +103,60 @@ class Base:
         if self.is_normalizar:
             self.normalizar_base()
 
-        if self.is_augmentation:
-            self.augmentar_base()
-
         if not self.is_base_separada:
             self.split_base(perc_teste=perc_teste)
 
         if is_split_validacao:
             self.split_base_validacao()
 
+        if self.is_augmentation:
+            self.augmentar_base()
+
         if get_padrao('DEBUG'):
             self.visualizar_tamanhos()
 
         return self.x, self.y
 
-    def augmentar_base(self):
-        rot = Rotate()
-        zm = Zoom()
-        rsc = RandomResizedCropGPU(size, min_scale=0.75)
-        dummy_labels = torch.zeros(len(tensor_batch)).long()
+    def augmentar_base(self, qtd_augmentar=2):
+        if len(self.x_train) > 0:
+            base_augmentar = self.x_train
+            resultado_augmentar = self.y_train
+        else:
+            base_augmentar = self.x
+            resultado_augmentar = self.y
 
-        tensor_batch = rot(tensor_batch)
-        tensor_batch = zm(tensor_batch)
-        tensor_batch, _ = rsc((tensor_batch, dummy_labels))
+        x_tensor = [torch.tensor(img).permute(2, 0, 1) for img in base_augmentar]
+        tensor_stack = torch.stack(x_tensor)
+        size = (self.input_shape[0], self.input_shape[1])
 
-        batch_tensor = torch.cat((batch_tensor, batch_aug), dim=0)
+        tensor_batch = TensorImage(tensor_stack)
 
-        return tensor_batch
+        lista_augmentation = []
+        resultado_augmentation = []
+        for i in range(1, qtd_augmentar + 1):
+            rot = Rotate()
+            zm = Zoom()
+            rsc = RandomResizedCropGPU(size, min_scale=0.75)
+            dummy_labels = torch.zeros(len(tensor_batch)).long()
+
+            tensor_batch = rot(tensor_batch)
+            tensor_batch = zm(tensor_batch)
+            tensor_batch, _ = rsc((tensor_batch, dummy_labels))
+            lista_augmentation += list(tensor_batch)
+            resultado_augmentation += list(resultado_augmentar)
+
+        tensor_batch_concatenado = torch.cat((tensor_stack, torch.stack(lista_augmentation)), dim=0)
+
+        dados_finais = np.array([i.permute(1, 2, 0) for i in tensor_batch_concatenado])
+
+        if len(self.x_train) > 0:
+            self.x_train = np.array(dados_finais)
+            self.y_train = np.array(list(resultado_augmentar) + resultado_augmentation)
+        else:
+            self.x = np.array(dados_finais)
+            self.y  = np.array(list(resultado_augmentar) + resultado_augmentation)
+
+        return self.x_train
 
     def tratar_arquivo(self, arquivo=None):
         """
@@ -142,8 +170,8 @@ class Base:
             arq = cv2.imread(arquivo)
             arq = cv2.cvtColor(arq, cv2.COLOR_BGR2RGB)
 
-        arq = cv2.resize(arq, (self.input_shape[0], self.input_shape[1]))
-        arq = np.reshape(arq, (self.input_shape[0], self.input_shape[1], self.input_shape[2]))
+        arq = cv2.resize(arq, (self.input_shape[0], self.input_shape[1]), interpolation=cv2.INTER_AREA)
+        arq = np.reshape(arq, self.input_shape)
         return arq
 
     def visualizar_tamanhos(self):

@@ -4,12 +4,19 @@ import io
 import os
 import matplotlib.pyplot as plt
 
+import tensorflow as tf
 from tensorflow.keras import layers, models
 from tensorflow.keras.models import model_from_json
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.saving import register_keras_serializable
 
 from BO.autoencoder.configuracao import AutoencoderConfiguracao
 from BO.util.util import get_padrao
+
+
+@register_keras_serializable()
+def ssim_loss(y_true, y_pred):
+    return 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, max_val=1.0))
 
 
 class Autoencoder(AutoencoderConfiguracao):
@@ -139,7 +146,7 @@ class Autoencoder(AutoencoderConfiguracao):
         min_delta = 0.0001,  # Requires at least 0.001 improvement
         )
 
-        historico = self.autoencoder.fit(self.base.x_train, self.base.x_train, epochs=self.qtd_epocas, batch_size=64, shuffle=True,
+        historico = self.autoencoder.fit(self.base.x_train, self.base.x_train, epochs=self.qtd_epocas, batch_size=16, shuffle=True,
                              validation_data=(self.base.x_test, self.base.x_test), callbacks=[early_stopping_callback])#, verbose=0)
 
         train_loss = historico.history["loss"]
@@ -174,7 +181,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return int(controle), int(controle)
 
-    def criar_encoder_o(self):
+    def criar_encoder(self):
         """
         Função responsável em criar a primeira parte do autoencoder, o Encoder.
         Ele começa criando um sequencial, onde o Input é o shape de entrada do Autneocder.
@@ -202,39 +209,6 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.encoder
 
-    def criar_encoder(self):
-        """
-        Função responsável em criar a primeira parte do autoencoder, o Encoder.
-        Ele começa criando um sequencial, onde o Input é o shape de entrada do Autneocder.
-        Após isso são inseridas as camadas de convolução, baseado na arquitetura do autoencoder.
-        Por fim, é adicionado a camada do vetor latente, adicionando uma camada dense, do tamanho
-        de vetor latente.
-        :return: Encoder criado
-        """
-        self.encoder = models.Sequential()
-        self.encoder.add(layers.InputLayer(shape=(64, 64, 3)))
-        self.encoder.add(layers.Conv2D(filters=128, padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=64, padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.MaxPooling2D((2,2), padding='same'))
-        self.encoder.add(layers.Conv2D(filters=256,  padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=64,  padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=128, padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=64,  padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=64,  padding='same', kernel_size=(3,3), activation='relu'))
-        self.encoder.add(layers.Conv2D(filters=128,  padding='same', kernel_size=(3,3), activation='relu'))
-
-        self.encoder.add(layers.BatchNormalization())
-        self.encoder.add(layers.LeakyReLU(alpha=0.5))
-        self.encoder.add(layers.Dropout(rate=0.3))
-        self.encoder.add(layers.Flatten())
-
-        self.encoder.add(layers.Dense(300, activation='relu', name='vetor_latente'))
-
-        if get_padrao('DEBUG'):
-            self.encoder.summary()
-
-        return self.encoder
-
     def criar_decoder(self):
         """
         Função responsável em criar a segunda parte do autoencoder, o Decoder.
@@ -246,91 +220,15 @@ class Autoencoder(AutoencoderConfiguracao):
         Por fim, é criado a cama de saída, com filtro de 1
         :return: Decoder criado
         """
-        altura, largura = self.calcular_saida_encoder()
+
+        input_decoder = self.encoder.layers[-2].input
+        reshape = (input_decoder.shape[1], input_decoder.shape[2], input_decoder.shape[3])
+
         self.decoder = models.Sequential()
         self.decoder.add(layers.InputLayer(shape=(300,)))
-        self.decoder.add(layers.Dense(units=65536, activation='relu'))#self.encoder.layers[-1].input.shape[1], activation=self.activation))
-        self.decoder.add(layers.Reshape((32, 32, 64)))#self.encoder.layers[-2].input.shape[1:])))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=256, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=64, strides=2, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.BatchNormalization())
-        self.decoder.add(layers.LeakyReLU(alpha=0.5))
-
-        self.decoder.add(layers.Conv2D(filters=3, kernel_size=(3,3), padding='same', activation='relu'))
-
-        if get_padrao('DEBUG'):
-            self.decoder.summary()
-
-        return self.decoder
-
-
-    def criar_decoder_espelho(self):
-        """
-        Função responsável em criar a segunda parte do autoencoder, o Decoder.
-        Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
-        baseado no encoder.
-        É adicionado uma camada inicial com a altura e largura calculada, e depois adicionado as camadas de convolução transpose,
-        com as mesmas configurações do encoder.
-
-        Por fim, é criado a cama de saída, com filtro de 1
-        :return: Decoder criado
-        """
-        altura, largura = self.calcular_saida_encoder()
-        self.decoder = models.Sequential()
-        self.decoder.add(layers.InputLayer(shape=(300,)))
-        self.decoder.add(layers.Dense(units=32 * 32 * 128, activation='relu'))#self.encoder.layers[-1].input.shape[1], activation=self.activation))
-        self.decoder.add(layers.Reshape((32, 32, 128)))#self.encoder.layers[-2].input.shape[1:])))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.Conv2DTranspose(filters=256, kernel_size=(3,3), padding='same', activation='relu'))
-        self.decoder.add(layers.UpSampling2D((2, 2)))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=64, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.Conv2DTranspose(filters=128, kernel_size=(3,3), padding='same', activation='relu'))
-
-        self.decoder.add(layers.BatchNormalization())
-        self.decoder.add(layers.LeakyReLU())
-
-        self.decoder.add(layers.Conv2DTranspose(filters=3, kernel_size=(3,3), padding='same', activation='relu'))
-
-        if get_padrao('DEBUG'):
-            self.decoder.summary()
-
-        return self.decoder
-
-    def criar_decoder_o(self):
-        """
-        Função responsável em criar a segunda parte do autoencoder, o Decoder.
-        Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
-        baseado no encoder.
-        É adicionado uma camada inicial com a altura e largura calculada, e depois adicionado as camadas de convolução transpose,
-        com as mesmas configurações do encoder.
-
-        Por fim, é criado a cama de saída, com filtro de 1
-        :return: Decoder criado
-        """
-        altura, largura = self.calcular_saida_encoder()
-        self.decoder = models.Sequential()
-        self.decoder.add(layers.InputLayer(shape=(self.latente,)))
-        self.decoder.add(
-            layers.Dense(units=self.filtros[self.nr_layers - 1] * altura * largura, activation=self.activation))
-        self.decoder.add(layers.Reshape((altura, largura, self.filtros[self.nr_layers - 1])))
+        self.decoder.add(layers.Dense(units=reshape[0] * reshape[1] * reshape[2],
+                                 activation='relu'))
+        self.decoder.add(layers.Reshape(reshape))
 
         for camada in range(self.nr_layers - 1, -1, -1):
             self.decoder.add(
