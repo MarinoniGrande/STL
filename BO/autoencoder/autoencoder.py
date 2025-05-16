@@ -216,8 +216,8 @@ class Autoencoder(AutoencoderConfiguracao):
 
         self.encoder.add(layers.Dense(self.latente, activation=self.activation, name='vetor_latente'))
 
-        # if get_padrao('DEBUG'):
-        #     self.encoder.summary()
+        if get_padrao('DEBUG'):
+            self.encoder.summary()
 
         return self.encoder
 
@@ -263,8 +263,8 @@ class Autoencoder(AutoencoderConfiguracao):
         self.decoder.add(layers.Conv2D(filters=self.input_shape[2], kernel_size=self.kernel_size, activation=self.output_activation,
                                        padding=self.padding))
 
-        # if get_padrao('DEBUG'):
-        #     self.decoder.summary()
+        if get_padrao('DEBUG'):
+            self.decoder.summary()
 
         return self.decoder
 
