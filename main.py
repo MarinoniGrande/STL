@@ -17,8 +17,10 @@ import tensorflow as tf
 gpus = tf.config.list_physical_devices('GPU')
 if gpus:
     try:
+        print(gpus)
         if BO.util.util.get_padrao('GPU') is None:
             for gpu in gpus:
+                print(gpu)
                 tf.config.experimental.set_memory_growth(gpu, True)
         else:
             tf.config.set_visible_devices(gpus[BO.util.util.get_padrao('GPU')], 'GPU')
