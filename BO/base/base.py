@@ -49,8 +49,6 @@ class Base:
                 arquivo_tratado = self.tratar_arquivo(diretorio + '/' + arquivo)
 
                 self.x.append(arquivo_tratado)
-                print(arquivo)
-                print(len(self.x))
                 if self.is_base_separada:
                     if 'train/' in diretorio.lower():
                         self.x_train.append(arquivo_tratado)
@@ -151,6 +149,10 @@ class Base:
             resultado_augmentation += list(resultado_augmentar)
 
         tensor_batch_concatenado = torch.cat((tensor_stack, torch.stack(lista_augmentation)), dim=0)
+
+        for idx, i in enumerate(tensor_batch_concatenado):
+            print(f"Item {idx} shape antes do permute: {i.shape}")
+            print(f"Item {idx} shape depois do permute: {i.permute(1, 2, 0).shape}")
 
         dados_finais = np.array([i.permute(1, 2, 0) for i in tensor_batch_concatenado])
 
