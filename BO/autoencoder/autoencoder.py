@@ -196,7 +196,7 @@ class Autoencoder(AutoencoderConfiguracao):
         for camada in range(0, self.nr_layers):
             self.encoder.add(
                 layers.Conv2D(filters=self.filtros[camada], kernel_size=self.kernel_size, activation=self.activation,
-                              strides=self.strides[camada], padding=self.padding,
+                              strides=1, padding=self.padding,
                               kernel_initializer=self.kernel_initializer))
 
             stride_atual = self.strides[camada]
@@ -253,7 +253,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
             self.decoder.add(
                 layers.Conv2DTranspose(filters=self.filtros[camada], kernel_size=self.kernel_size,
-                                       strides=self.strides[::-1][camada],
+                                       strides=1,
                                        activation=self.activation, padding=self.padding,
                                        kernel_initializer=self.kernel_initializer))
 
