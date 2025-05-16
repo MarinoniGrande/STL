@@ -14,6 +14,11 @@ from BO.classificador.classificador import Classificador
 
 import tensorflow as tf
 
+
+
+BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
+
+
 gpus = tf.config.list_physical_devices('GPU')
 print('gpus')
 print(gpus)
@@ -31,8 +36,6 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
-
-BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 
 BO.util.util.configurar_reprodutibilidade()
 

@@ -6,7 +6,7 @@ import os
 import datetime
 import shutil
 
-ARQUIVO_CONFIGURACOES = 'padrao.json'
+ARQUIVO_CONFIGURACOES = 'padrao'
 NOME_PROCESSO = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 def criar_processo(tipo=None):
