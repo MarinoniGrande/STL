@@ -136,7 +136,7 @@ class Pool:
         #plt.show()
 
         print(round(soma_ssim/len(self.imagens_reconstrucao),2), get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'))
-        return True#round(soma_ssim/len(self.imagens_reconstrucao),2) >= get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
+        return round(soma_ssim/len(self.imagens_reconstrucao),2) >= get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE')
 
 
     def verificar_reconstrucao(self, predicoes=None):
