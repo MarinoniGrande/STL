@@ -1,4 +1,5 @@
 {
+  "GPU": 0,
   "DEBUG": true,
   "SEEDS": {
     "IS_ALEATORIO": false,
