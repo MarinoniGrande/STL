@@ -11,7 +11,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.saving import register_keras_serializable
 
 from BO.autoencoder.configuracao import AutoencoderConfiguracao
-from BO.util.util import get_padrao
+from BO.util.util import get_padrao, NOME_PROCESSO
 
 
 @register_keras_serializable()
@@ -31,14 +31,15 @@ class Autoencoder(AutoencoderConfiguracao):
         super().__init__(modelagem=modelagem, input_shape=input_shape)
         self.base = base
         self.id = id
-        self.diretorio = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
+        self.processo = NOME_PROCESSO
+        self.diretorio = f"AUTOENCODERS/{self.processo}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
 
     def salvar(self):
         """
         Função utilizada para salvar o autoencoder, encoder e informações do encoder em arquivos
         :return: Status de Salvamento (Sempre True)
         """
-        diretorio = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
+        diretorio = f"AUTOENCODERS/{self.processo}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
         os.makedirs(diretorio, exist_ok=True)
 
         if get_padrao('DEBUG'):
@@ -126,7 +127,7 @@ class Autoencoder(AutoencoderConfiguracao):
         """
         self.autoencoder.compile(optimizer='adam', loss='mse')
 
-        diretorio = f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
+        diretorio = f"AUTOENCODERS/{self.processo}/{get_padrao('POOL.MODELAGEM')}/{str(self.id).zfill(3)}"
         os.makedirs(diretorio, exist_ok=True)
 
         # checkpoint_callback = ModelCheckpoint(
@@ -181,7 +182,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return int(controle), int(controle)
 
-    def criar_encoder_o(self):
+    def criar_encoder(self):
         """
         Função responsável em criar a primeira parte do autoencoder, o Encoder.
         Ele começa criando um sequencial, onde o Input é o shape de entrada do Autneocder.
@@ -197,6 +198,17 @@ class Autoencoder(AutoencoderConfiguracao):
                 layers.Conv2D(filters=self.filtros[camada], kernel_size=self.kernel_size, activation=self.activation,
                               strides=self.strides[camada], padding=self.padding,
                               kernel_initializer=self.kernel_initializer))
+
+            stride_atual = self.strides[camada]
+            if stride_atual > 1:
+                self.encoder.add(
+                    layers.MaxPooling2D(
+                        pool_size=(stride_atual, stride_atual),
+                        strides=stride_atual,
+                        padding=self.padding
+                    )
+                )
+
         self.encoder.add(layers.BatchNormalization())
         self.encoder.add(layers.LeakyReLU(alpha=0.5))
         self.encoder.add(layers.Dropout(rate=0.3))
@@ -209,7 +221,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.encoder
 
-    def criar_decoder_o(self):
+    def criar_decoder(self):
         """
         Função responsável em criar a segunda parte do autoencoder, o Decoder.
         Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
@@ -231,6 +243,14 @@ class Autoencoder(AutoencoderConfiguracao):
         self.decoder.add(layers.Reshape(reshape))
 
         for camada in range(self.nr_layers - 1, -1, -1):
+
+            stride_atual = self.strides[::-1][camada]
+
+            if stride_atual > 1:
+                self.decoder.add(
+                    layers.UpSampling2D(size=(stride_atual, stride_atual))
+                )
+
             self.decoder.add(
                 layers.Conv2DTranspose(filters=self.filtros[camada], kernel_size=self.kernel_size,
                                        strides=self.strides[::-1][camada],
@@ -248,7 +268,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.decoder
 
-    def criar_encoder(self):
+    def criar_encoder_o(self):
         """
         Função responsável em criar a primeira parte do autoencoder, o Encoder.
         Ele começa criando um sequencial, onde o Input é o shape de entrada do Autneocder.
@@ -281,7 +301,7 @@ class Autoencoder(AutoencoderConfiguracao):
 
         return self.encoder
 
-    def criar_decoder(self):
+    def criar_decoder_o(self):
         """
         Função responsável em criar a segunda parte do autoencoder, o Decoder.
         Ele começa calculando qual é a altura e largura da primeira etapa, para ser possível reconstruir fielmente o decoder,
@@ -363,7 +383,6 @@ class Autoencoder(AutoencoderConfiguracao):
             self.decoder.summary()
 
         return self.decoder
-
 
     def carregar_model(self, json_path=None, weights_path=None, tipo='autoencoder'):
         """

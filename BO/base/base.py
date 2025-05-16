@@ -53,6 +53,8 @@ class Base:
                 if self.is_base_separada:
                     if 'train/' in diretorio.lower():
                         self.x_train.append(arquivo_tratado)
+                    elif 'val/' in diretorio.lower():
+                        self.x_val.append(arquivo_tratado)
                     else:
                         self.x_test.append(arquivo_tratado)
 
@@ -62,6 +64,8 @@ class Base:
                     if self.is_base_separada:
                         if 'train/' in diretorio.lower():
                             self.y_train.append(resultado)
+                        if 'val/' in diretorio.lower():
+                            self.y_val.append(resultado)
                         else:
                             self.y_test.append(resultado)
 
@@ -207,6 +211,9 @@ class Base:
 
         random_state = random.randint(1, 100) if get_padrao('SEEDS.IS_ALEATORIO') else get_padrao('SEEDS.BASE')
 
+        if len(self.x_val) > 0:
+            return self.x_train, self.x_val
+
         if self.tipo == 'labeled':
             self.x_train, self.x_val, self.y_train, self.y_val = train_test_split(self.x_train, self.y_train, test_size=0.2, random_state=random_state)
 
@@ -214,21 +221,6 @@ class Base:
             self.x_train, self.x_val = train_test_split(self.x, test_size=0.2, random_state=random_state)
 
         return self.x_train, self.x_val
-
-    def split_base_finetunning(self):
-        """
-        Função responsável por separar a base treino em finetunning
-        :return: Base de treino e de validação
-        """
-        random_state = random.randint(1, 100) if get_padrao('SEEDS.IS_ALEATORIO') else get_padrao('SEEDS.BASE')
-
-        if self.tipo == 'labeled':
-            self.x_train, self.x_fine, self.y_train, self.y_fine = train_test_split(self.x_train, self.y_train, test_size=0.2, random_state=random_state)
-
-        else:
-            self.x_train, self.x_fine = train_test_split(self.x, test_size=0.2, random_state=random_state)
-
-        return self.x_train, self.x_fine
 
     def split_base(self, perc_teste=0.3):
         """
