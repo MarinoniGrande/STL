@@ -150,11 +150,11 @@ class Base:
 
         tensor_batch_concatenado = torch.cat((tensor_stack, torch.stack(lista_augmentation)), dim=0)
 
-        for idx, i in enumerate(tensor_batch_concatenado):
-            print(f"Item {idx} shape antes do permute: {i.shape}")
-            print(f"Item {idx} shape depois do permute: {i.permute(1, 2, 0).shape}")
+        # for idx, i in enumerate(tensor_batch_concatenado):
+        #     print(f"Item {idx} shape antes do permute: {i.shape}")
+        #     print(f"Item {idx} shape depois do permute: {i.permute(1, 2, 0).shape}")
 
-        dados_finais = np.array([i.permute(1, 2, 0) for i in tensor_batch_concatenado])
+        dados_finais = torch.stack([i.permute(1, 2, 0) for i in tensor_batch_concatenado]).numpy()
 
         if len(self.x_train) > 0:
             self.x_train = np.array(dados_finais)
