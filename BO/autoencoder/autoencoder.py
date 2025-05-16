@@ -192,7 +192,7 @@ class Autoencoder(AutoencoderConfiguracao):
         :return: Encoder criado
         """
         self.encoder = models.Sequential()
-        self.encoder.add(layers.InputLayer(shape=self.input_shape))
+        self.encoder.add(layers.InputLayer(input_shape=self.input_shape))
         for camada in range(0, self.nr_layers):
             self.encoder.add(
                 layers.Conv2D(filters=self.filtros[camada], kernel_size=self.kernel_size, activation=self.activation,
@@ -237,7 +237,7 @@ class Autoencoder(AutoencoderConfiguracao):
         reshape = (input_decoder.shape[1], input_decoder.shape[2], input_decoder.shape[3])
 
         self.decoder = models.Sequential()
-        self.decoder.add(layers.InputLayer(shape=(self.latente,)))
+        self.decoder.add(layers.InputLayer(input_shape=(self.latente,)))
         self.decoder.add(layers.Dense(units=reshape[0] * reshape[1] * reshape[2],
                                  activation='relu'))
         self.decoder.add(layers.Reshape(reshape))
