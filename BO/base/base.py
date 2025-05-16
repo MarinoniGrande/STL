@@ -49,7 +49,8 @@ class Base:
                 arquivo_tratado = self.tratar_arquivo(diretorio + '/' + arquivo)
 
                 self.x.append(arquivo_tratado)
-
+                print(arquivo)
+                print(len(self.x))
                 if self.is_base_separada:
                     if 'train/' in diretorio.lower():
                         self.x_train.append(arquivo_tratado)
