@@ -37,7 +37,7 @@ class Classificador:
 
     def carregar_bases(self):
         self.base_treino.carregar(is_split_validacao=True)
-        self.base_teste.carregar(is_split_validacao=True)
+        self.base_teste.carregar()
 
     def get_classificador(self):
         dict_classificadores = {
