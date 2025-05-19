@@ -130,12 +130,18 @@ class Base:
             base_augmentar = self.x
             resultado_augmentar = self.y
 
+        print(len(self.x))
+        print(len(self.x_train))
+
         x_tensor = [torch.tensor(img).permute(2, 0, 1) for img in base_augmentar]
+        print(1)
+
         tensor_stack = torch.stack(x_tensor)
+        print(2)
         size = (self.input_shape[0], self.input_shape[1])
-
+        print(3)
         tensor_batch = TensorImage(tensor_stack)
-
+        print(4)
         lista_augmentation = []
         resultado_augmentation = []
         for i in range(1, qtd_augmentar + 1):
