@@ -42,6 +42,7 @@ class Base:
         :return: Status de leitura (Sempre True)
         """
         for dado in os.listdir(diretorio):
+            print(diretorio)
             if '.' in dado:
                 arquivo = dado
                 label = diretorio.split("/")[-1]
