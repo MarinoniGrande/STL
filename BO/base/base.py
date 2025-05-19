@@ -42,7 +42,6 @@ class Base:
         :return: Status de leitura (Sempre True)
         """
         for dado in os.listdir(diretorio):
-            print(diretorio)
             if '.' in dado:
                 arquivo = dado
                 label = diretorio.split("/")[-1]
@@ -63,10 +62,13 @@ class Base:
                     self.y.append(resultado)
                     if self.is_base_separada:
                         if 'train/' in diretorio.lower():
+                            print(f'treino {diretorio}')
                             self.y_train.append(resultado)
                         if 'val/' in diretorio.lower():
+                            print(f'validation  {diretorio}')
                             self.y_val.append(resultado)
                         else:
+                            print(f'test  {diretorio}')
                             self.y_test.append(resultado)
 
             else:
