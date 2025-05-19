@@ -102,20 +102,11 @@ class Base:
 
         self.percorrer_diretorio(diretorio=self.diretorio)
 
-        print('-----')
-        if get_padrao('DEBUG'):
-            self.visualizar_tamanhos()
 
         self.y = np.array(self.y)
 
-        print('-----')
-        if get_padrao('DEBUG'):
-            self.visualizar_tamanhos()
         if self.is_normalizar:
             self.normalizar_base()
-
-        if get_padrao('DEBUG'):
-            self.visualizar_tamanhos()
 
         if not self.is_base_separada:
             self.split_base(perc_teste=perc_teste)
