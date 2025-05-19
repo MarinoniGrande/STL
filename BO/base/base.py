@@ -62,13 +62,10 @@ class Base:
                     self.y.append(resultado)
                     if self.is_base_separada:
                         if 'train/' in diretorio.lower():
-                            print(f'treino {diretorio}')
                             self.y_train.append(resultado)
-                        if 'val/' in diretorio.lower():
-                            print(f'validation  {diretorio}')
+                        elif 'val/' in diretorio.lower():
                             self.y_val.append(resultado)
                         else:
-                            print(f'test  {diretorio}')
                             self.y_test.append(resultado)
 
             else:
