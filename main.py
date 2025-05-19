@@ -22,20 +22,25 @@ BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 gpus = tf.config.list_physical_devices('GPU')
 print('gpus')
 print(gpus)
+print(f'Encontrado {len(gpus)} GPU{"S" if len(gpus) > 1 else ""}')
+usado = 0
 if gpus:
     try:
         print(gpus)
         if BO.util.util.get_padrao('GPU') is None:
             for gpu in gpus:
                 print(gpu)
+                usado += 1
                 tf.config.experimental.set_memory_growth(gpu, True)
         else:
+            usado  = len(gpus)
             tf.config.set_visible_devices(gpus[BO.util.util.get_padrao('GPU')], 'GPU')
             tf.config.experimental.set_memory_growth(gpus[BO.util.util.get_padrao('GPU')], True)
 
     except RuntimeError as e:
         print(e)
 
+print(f'Utilizado {usado} GPU{"S" if len(gpus) > 1 else ""}')
 
 BO.util.util.configurar_reprodutibilidade()
 
