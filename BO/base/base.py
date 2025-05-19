@@ -130,18 +130,11 @@ class Base:
             base_augmentar = self.x
             resultado_augmentar = self.y
 
-        print(len(self.x))
-        print(len(self.x_train))
-
         x_tensor = [torch.tensor(img).permute(2, 0, 1) for img in base_augmentar]
-        print(1)
 
         tensor_stack = torch.stack(x_tensor)
-        print(2)
         size = (self.input_shape[0], self.input_shape[1])
-        print(3)
         tensor_batch = TensorImage(tensor_stack)
-        print(4)
         lista_augmentation = []
         resultado_augmentation = []
         for i in range(1, qtd_augmentar + 1):
@@ -155,15 +148,15 @@ class Base:
             tensor_batch, _ = rsc((tensor_batch, dummy_labels))
             lista_augmentation += list(tensor_batch)
             resultado_augmentation += list(resultado_augmentar)
-
+        print('0')
         tensor_batch_concatenado = torch.cat((tensor_stack, torch.stack(lista_augmentation)), dim=0)
-
+        print('1')
         # for idx, i in enumerate(tensor_batch_concatenado):
         #     print(f"Item {idx} shape antes do permute: {i.shape}")
         #     print(f"Item {idx} shape depois do permute: {i.permute(1, 2, 0).shape}")
-
+        print('2')
         dados_finais = torch.stack([i.permute(1, 2, 0) for i in tensor_batch_concatenado]).numpy()
-
+        print('3')
         if len(self.x_train) > 0:
             self.x_train = np.array(dados_finais)
             self.y_train = np.array(list(resultado_augmentar) + resultado_augmentation)
