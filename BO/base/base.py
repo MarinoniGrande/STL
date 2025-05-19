@@ -214,6 +214,10 @@ class Base:
         :return: Base normalizada (0 a 1)
         """
         self.x = np.array(self.x).astype('float32') / 255.0
+        self.x_train = np.array(self.x_train).astype('float32') / 255.0
+        self.x_test = np.array(self.x_test).astype('float32') / 255.0
+        self.x_val = np.array(self.x_val).astype('float32') / 255.0
+
         return self.x
 
     def split_base_validacao(self):
