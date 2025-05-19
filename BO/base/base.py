@@ -106,6 +106,9 @@ class Base:
         if self.is_normalizar:
             self.normalizar_base()
 
+        if get_padrao('DEBUG'):
+            self.visualizar_tamanhos()
+
         if not self.is_base_separada:
             self.split_base(perc_teste=perc_teste)
 
