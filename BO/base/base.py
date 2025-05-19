@@ -130,7 +130,7 @@ class Base:
             base_augmentar = self.x
             resultado_augmentar = self.y
 
-        x_tensor = [torch.tensor(img).permute(2, 0, 1) for img in base_augmentar]
+        x_tensor = [torch.tensor(img, dtype=torch.float32).permute(2, 0, 1) for img in base_augmentar]
 
         tensor_stack = torch.stack(x_tensor)
         size = (self.input_shape[0], self.input_shape[1])
