@@ -138,34 +138,23 @@ class Base:
         lista_augmentation = []
         resultado_augmentation = []
         for i in range(1, qtd_augmentar + 1):
-            print('1')
             rot = Rotate()
-            print('2')
             zm = Zoom()
-            print('3')
             rsc = RandomResizedCropGPU(size, min_scale=0.75)
-            print('4')
             dummy_labels = torch.zeros(len(tensor_batch)).long()
-            print('5')
             tensor_batch = rot(tensor_batch)
-            print('6')
             tensor_batch = zm(tensor_batch)
-            print('7')
             tensor_batch, _ = rsc((tensor_batch, dummy_labels))
-            print('8')
+
             lista_augmentation += list(tensor_batch)
-            print('9')
+
             resultado_augmentation += list(resultado_augmentar)
-            print('10')
-        print('0')
+
         tensor_batch_concatenado = torch.cat((tensor_stack, torch.stack(lista_augmentation)), dim=0)
-        print('1')
         # for idx, i in enumerate(tensor_batch_concatenado):
         #     print(f"Item {idx} shape antes do permute: {i.shape}")
         #     print(f"Item {idx} shape depois do permute: {i.permute(1, 2, 0).shape}")
-        print('2')
         dados_finais = torch.stack([i.permute(1, 2, 0) for i in tensor_batch_concatenado]).numpy()
-        print('3')
         if len(self.x_train) > 0:
             self.x_train = np.array(dados_finais)
             self.y_train = np.array(list(resultado_augmentar) + resultado_augmentation)
