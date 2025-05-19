@@ -36,8 +36,8 @@ class Classificador:
         self.carregar_bases()
 
     def carregar_bases(self):
-        self.base_treino.carregar()
-        self.base_teste.carregar()
+        self.base_treino.carregar(is_split_validacao=True)
+        self.base_teste.carregar(is_split_validacao=True)
 
     def get_classificador(self):
         dict_classificadores = {
@@ -104,7 +104,6 @@ class Classificador:
         x_val_flat, y_val_flat = np.array(self.base_treino.x_val), tf.keras.utils.to_categorical(self.base_treino.y_val, num_classes=2)
 
         if self.classificador == 'CNN':
-            print('aqui')
             encoder.trainable = get_padrao('CLASSIFICADOR.ESTIMADOR')
             x = encoder.outputs[0]
             x = layers.Dense(512, activation='relu')(x)

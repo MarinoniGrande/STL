@@ -9,19 +9,11 @@ import BO.util.util
 from BO.base.base import Base
 from BO.pool.pool import Pool
 from BO.classificador.classificador import Classificador
-
-
-
 import tensorflow as tf
-
-
 
 BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 
-
 gpus = tf.config.list_physical_devices('GPU')
-print('gpus')
-print(gpus)
 print(f'Encontrado {len(gpus)} GPU{"S" if len(gpus) > 1 else ""}')
 usado = 0
 if gpus:
