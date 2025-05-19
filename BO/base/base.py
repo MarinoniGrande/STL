@@ -104,8 +104,16 @@ class Base:
         self.limpar_bases()
 
         self.percorrer_diretorio(diretorio=self.diretorio)
+
+        print('-----')
+        if get_padrao('DEBUG'):
+            self.visualizar_tamanhos()
+
         self.y = np.array(self.y)
 
+        print('-----')
+        if get_padrao('DEBUG'):
+            self.visualizar_tamanhos()
         if self.is_normalizar:
             self.normalizar_base()
 
