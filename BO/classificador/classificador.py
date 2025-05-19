@@ -29,8 +29,8 @@ class Classificador:
 
         self.resultado = []
 
-        self.base_teste = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_ALVO_TESTE_SEPARADO'), diretorio=f"BASE/{get_padrao('BASE.DIRETORIO_ALVO_TESTE')}")
-        self.base_treino = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_ALVO_TREINO_SEPARADO'), diretorio=f"BASE/{get_padrao('BASE.DIRETORIO_ALVO_TREINO')}")
+        self.base_teste = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_ALVO_TESTE_SEPARADO'), diretorio=f"{get_padrao('BASE.DIRETORIO_ALVO_TESTE')}")
+        self.base_treino = Base(is_normalizar=True, tipo='labeled', is_base_separada=get_padrao('BASE.IS_DIRETORIO_ALVO_TREINO_SEPARADO'), diretorio=f"{get_padrao('BASE.DIRETORIO_ALVO_TREINO')}")
         self.pool = pool
 
         self.carregar_bases()
