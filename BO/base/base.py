@@ -221,7 +221,7 @@ class Base:
             self.x_train, self.x_val, self.y_train, self.y_val = train_test_split(self.x_train, self.y_train, test_size=0.2, random_state=random_state)
 
         else:
-            self.x_train, self.x_val = train_test_split(self.x, test_size=0.2, random_state=random_state)
+            self.x_train, self.x_val = train_test_split(self.x_train, test_size=0.2, random_state=random_state)
 
         return self.x_train, self.x_val
 
