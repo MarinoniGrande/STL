@@ -25,7 +25,7 @@ class Pool:
         :param modelagem: Modelagem dos autoencoders do pool
         """
         self.base = base
-        self.diretorio = diretorio if diretorio is not None else f"AUTOENCODERS/{get_padrao('BASE.DIRETORIO_TREINO')}/{get_padrao('POOL.MODELAGEM')}"
+        self.diretorio = diretorio if diretorio is not None else f"AUTOENCODERS/{get_padrao('BASE.NOME')}/{get_padrao('POOL.MODELAGEM')}"
 
         self.modelagem = modelagem if modelagem is not None else get_padrao('POOL.MODELAGEM')
         self.input_shape = input_shape if input_shape is not None else get_padrao('BASE.INPUT_SHAPE')
