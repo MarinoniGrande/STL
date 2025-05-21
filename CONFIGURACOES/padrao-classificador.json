@@ -16,7 +16,7 @@
       "Normal",
       "Kidney_stone"
     ],
-    "INPUT_SHAPE": [224,224,1],
+    "INPUT_SHAPE": [128,128,1],
     "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/KYOTO",
     "DIRETORIO_FINETUNNING": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
     "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
@@ -69,14 +69,14 @@
     "EPOCAS_PADRAO": 250
   },
   "POOL": {
-    "NOME": "KYOTO_SEMONLINE_224",
+    "NOME": "NAZMUL_ONLINE_128",
     "IS_FINETUNNING": true,
     "FINETUNNING_QTD_EPOCAS": 100,
     "QUANTIDADE": 50,
     "MODELAGEM": "SLA",
     "FUNCAO_CUSTO_OFFLINE": "GCCA",
     "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.80,
-    "VALOR_CUSTO_THRESHOLD_ONLINE": 0.1,
+    "VALOR_CUSTO_THRESHOLD_ONLINE": 0.3,
     "FUNCAO_CUSTO_ONLINE": "SSIM",
     "QTD_IMAGENS_RECONSTRUCAO": 15
   },
