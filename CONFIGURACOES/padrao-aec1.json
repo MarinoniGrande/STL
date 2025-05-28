@@ -3,13 +3,13 @@
   "DEBUG": true,
   "SEEDS": {
     "IS_ALEATORIO": false,
-    "BASE": 11,
-    "CLASSIFICADOR": 11,
-    "RANDOM": 11,
-    "NUMPY": 11,
-    "TENSORFLOW": 11,
-    "OPENCV": 11,
-    "KERAS": 11
+    "BASE": 9,
+    "CLASSIFICADOR": 9,
+    "RANDOM": 9,
+    "NUMPY": 9,
+    "TENSORFLOW": 9,
+    "OPENCV": 9,
+    "KERAS": 9
   },
   "BASE": {
     "LABELS": [
