@@ -31,9 +31,9 @@
     "SEED_RANDOM_INI": 0,
     "SEED_RANDOM_FIM": 10000,
     "VETOR_LATENTE_PADRAO": 300,
-    "VETOR_LATENTE_RANDOM_INI": 100,
-    "VETOR_LATENTE_RANDOM_FIM": 400,
-    "LAYERS_RANDOM_INI": 2,
+    "VETOR_LATENTE_RANDOM_INI": 30,
+    "VETOR_LATENTE_RANDOM_FIM": 200,
+    "LAYERS_RANDOM_INI": 3,
     "LAYERS_RANDOM_FIM": 10,
     "LAYERS_RANDOM": [
       2,
@@ -41,9 +41,7 @@
       8,
       16,
       32,
-      64,
-      128,
-      256
+      64
     ],
     "EPOCAS_RANDOM_INI": 300,
     "EPOCAS_RANDOM_FIM": 500,
