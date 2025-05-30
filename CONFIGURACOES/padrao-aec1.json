@@ -16,7 +16,7 @@
       "Normal",
       "Kidney_stone"
     ],
-    "INPUT_SHAPE": [128,128,1],
+    "INPUT_SHAPE": [96,96,1],
     "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/KYOTO",
     "DIRETORIO_FINETUNNING": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
     "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
