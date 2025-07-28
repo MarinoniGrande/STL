@@ -46,6 +46,7 @@ try:
         _ = Pool(base=base).criar()
 
     elif tipo == 'classificar':
+        print('iniciando classificacao...')
         pool = Pool(base=base)
         _ = pool.carregar_pool(tipo='encoder')
         #_ = pool.aplicar_funcao_custo_offline()
