@@ -168,16 +168,16 @@ class Classificador:
         nm_diretorio = f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/'
         os.makedirs(f'{nm_diretorio}', exist_ok=True)
 
-
+        print('1')
         imagens_reconstrucao = np.array(base_test.x_test[:40])
         lista_predicoes, novo_pool = self.carregar_vetores(pool=self.pool, imagens_reconstrucao=imagens_reconstrucao)
 
         n_components = int(min([l.shape[0] for l in lista_predicoes] + [l.shape[1] for l in lista_predicoes]))
-
+        print('2')
         gcca = GCCA(n_components=n_components - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
         gcca.fit(lista_predicoes)
         resultado_geral = gcca.transform(lista_predicoes)
-
+        print('3')
         similarity_matrix = np.corrcoef([embedding.flatten() for embedding in resultado_geral])
         # print(similarity_matrix)
 
@@ -193,7 +193,7 @@ class Classificador:
 
         plt.savefig(f'{nm_diretorio}/similaridade.png')
         #plt.show()
-
+        print('4')
         encoders_similares = []
         for i in range(len(similarity_matrix)):
             for j in range(i + 1, len(similarity_matrix)):
@@ -207,7 +207,7 @@ class Classificador:
         encoders_filtrados = [novo_pool[e]['nome'] for e in encoders_filtrados]
         _ = self.plot_tipo(tipo='pca', resultado_geral=resultado_geral, encoders_filtrados=encoders_filtrados,
                              pool=novo_pool, diretorio=nm_diretorio)
-
+        print('5')
         x_test = tf.reshape(base_teste_cla.x_test, (-1,) + base_teste_cla.x_test[0].shape)
         x_train_flat, y_train_flat = np.array(base_treino_cla.x_train), tf.keras.utils.to_categorical(
             base_treino_cla.y_train, num_classes=2)
@@ -255,7 +255,7 @@ class Classificador:
             if p['nome'] in encoders_filtrados:
                 resultado_filtro.append(predicoes)
             resultado.append(predicoes)
-
+        print('6')
         prod = np.product(resultado, axis=0)
         lista_produto = [np.argmax(x) for x in prod]
 
@@ -271,7 +271,7 @@ class Classificador:
         with open(f"{nm_diretorio}/RESULTADO.txt", "w") as f:
             f.write(f'TOTAL SOMA: {accuracy_score(base_teste_cla.y_test, lista_soma)}, PRODUTO: {accuracy_score(base_teste_cla.y_test, lista_produto)}\n')
             f.write(f'FILTRADO: SOMA {accuracy_score(base_teste_cla.y_test, lista_soma_filtrado)}, PRODUTO {accuracy_score(base_teste_cla.y_test, lista_produto_filtrado)}\n')
-
+        print('7')
         return True
 
 
