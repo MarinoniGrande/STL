@@ -25,7 +25,7 @@ if gpus:
                 usado += 1
                 tf.config.experimental.set_memory_growth(gpu, True)
         else:
-            usado  = len(gpus)
+            usado  = 1
             tf.config.set_visible_devices(gpus[BO.util.util.get_padrao('GPU')], 'GPU')
             tf.config.experimental.set_memory_growth(gpus[BO.util.util.get_padrao('GPU')], True)
 
