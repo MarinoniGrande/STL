@@ -146,7 +146,7 @@ class Classificador:
         lista_predicoes = []
         novo_pool = []
         for enc in pool:
-            modelo = enc.get('modelo')
+            modelo = enc.encoder
             # print(f'enc {enc.get("nome")}')
             predicoes = modelo.predict(imagens_reconstrucao)
 
@@ -187,8 +187,8 @@ class Classificador:
 
         plt.figure(figsize=(18, 9))
         sns.heatmap(similarity_matrix, annot=True, cmap='coolwarm',
-                    xticklabels=[f'Enc {novo_pool[i]["nome"]}' for i in range(len(resultado_geral))],
-                    yticklabels=[f'Enc {novo_pool[i]["nome"]}' for i in range(len(resultado_geral))])
+                    xticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral))],
+                    yticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral))])
         plt.title("Encoder Similarity")
 
         plt.savefig(f'{nm_diretorio}/similaridade.png')
@@ -204,7 +204,7 @@ class Classificador:
         for i, j in encoders_similares:
             if j in encoders_filtrados:
                 encoders_filtrados.remove(j)
-        encoders_filtrados = [novo_pool[e]['nome'] for e in encoders_filtrados]
+        encoders_filtrados = [novo_pool[e].id for e in encoders_filtrados]
         _ = self.plot_tipo(tipo='pca', resultado_geral=resultado_geral, encoders_filtrados=encoders_filtrados,
                              pool=novo_pool, diretorio=nm_diretorio)
         print('5')
@@ -215,8 +215,8 @@ class Classificador:
 
         resultado, resultado_filtro = [], []
         for p in novo_pool:
-            print(p.get('nome'))
-            encoder = p['modelo']
+            print(p.id)
+            encoder = p.encoder
 
             if self.classificador == 'SVC':
                 x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
@@ -283,9 +283,9 @@ class Classificador:
         plt.scatter(model_2d[:, 0], model_2d[:, 1], c=np.arange(len(pool)), cmap='viridis', s=100)
         contador = 0
         for aec in pool:
-            plt.text(model_2d[contador, 0] + 0.01, model_2d[contador, 1] + 0.01, f'Model {aec.get("nome")}',
+            plt.text(model_2d[contador, 0] + 0.01, model_2d[contador, 1] + 0.01, f'Model {aec.id}',
                      fontsize=12,
-                     color='#000000' if aec.get('nome') in encoders_filtrados else '#FF0000')
+                     color='#000000' if aec.id in encoders_filtrados else '#FF0000')
             contador += 1
 
         print(f'Encoders restantes ({len(encoders_filtrados)}): {encoders_filtrados}')
