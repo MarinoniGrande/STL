@@ -47,7 +47,7 @@ try:
 
     elif tipo == 'classificar':
         print('iniciando classificacao...')
-        pool = Pool(base=base)
+        pool = Pool(base=base, diretorio=BO.util.util.get_padrao('POOL.DIRETORIO'))
         _ = pool.carregar_pool(tipo='encoder')
         #_ = pool.aplicar_funcao_custo_offline()
         # salvar best weights
