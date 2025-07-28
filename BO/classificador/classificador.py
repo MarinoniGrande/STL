@@ -293,7 +293,7 @@ class Classificador:
         plt.xlabel('Componente 1')
         plt.ylabel('Componente 2')
         plt.grid(True)
-        plt.savefig(f'{nm_diretorio}/pca.png')
+        plt.savefig(f'{diretorio}/pca.png')
         return True
 
     def classificar_antigo(self):
