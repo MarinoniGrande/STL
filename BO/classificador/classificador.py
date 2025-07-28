@@ -252,7 +252,7 @@ class Classificador:
 
 
             y_pred = np.argmax(predicoes, axis=1)
-            if p['nome'] in encoders_filtrados:
+            if p.id in encoders_filtrados:
                 resultado_filtro.append(predicoes)
             resultado.append(predicoes)
         print('6')
