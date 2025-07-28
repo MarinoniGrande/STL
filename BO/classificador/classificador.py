@@ -13,6 +13,9 @@ from sklearn.svm import SVC
 
 from BO.util.util import get_padrao, NOME_PROCESSO
 from BO.base.base import Base
+from mvlearn.embed import GCCA
+
+from sklearn.decomposition import PCA
 
 
 class Classificador:
@@ -139,8 +142,161 @@ class Classificador:
 
         return y_pred, predicoes
 
+    def carregar_vetores(self, pool=None, imagens_reconstrucao=None):
+        lista_predicoes = []
+        novo_pool = []
+        for enc in pool:
+            modelo = enc.get('modelo')
+            # print(f'enc {enc.get("nome")}')
+            predicoes = modelo.predict(imagens_reconstrucao)
 
-    def classificar(self):
+            is_reconstrucao = True
+            for p in predicoes:
+                if np.sum(p) == 0:
+                    is_reconstrucao = False
+
+            if is_reconstrucao:
+                novo_pool.append(enc)
+                lista_predicoes.append(predicoes)
+        return lista_predicoes, novo_pool
+
+    def classificar(self, base_test=None):
+
+        base_treino_cla = self.base_treino
+
+        base_teste_cla = self.base_teste
+        nm_diretorio = f'RESULTADOS/{NOME_PROCESSO}/CLASSIFICADOR/'
+        os.makedirs(f'{nm_diretorio}', exist_ok=True)
+
+
+        imagens_reconstrucao = np.array(base_test.x_test[:40])
+        lista_predicoes, novo_pool = self.carregar_vetores(pool=self.pool, imagens_reconstrucao=imagens_reconstrucao)
+
+        n_components = int(min([l.shape[0] for l in lista_predicoes] + [l.shape[1] for l in lista_predicoes]))
+
+        gcca = GCCA(n_components=n_components - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
+        gcca.fit(lista_predicoes)
+        resultado_geral = gcca.transform(lista_predicoes)
+
+        similarity_matrix = np.corrcoef([embedding.flatten() for embedding in resultado_geral])
+        # print(similarity_matrix)
+
+        threshold_similaridade = 0.7
+        # similarity_matrix = cosine_similarity(encoder_vectors)
+        # Optional: plot similarity matrix
+
+        plt.figure(figsize=(18, 9))
+        sns.heatmap(similarity_matrix, annot=True, cmap='coolwarm',
+                    xticklabels=[f'Enc {novo_pool[i]["nome"]}' for i in range(len(resultado_geral))],
+                    yticklabels=[f'Enc {novo_pool[i]["nome"]}' for i in range(len(resultado_geral))])
+        plt.title("Encoder Similarity")
+
+        plt.savefig(f'{nm_diretorio}/similaridade.png')
+        #plt.show()
+
+        encoders_similares = []
+        for i in range(len(similarity_matrix)):
+            for j in range(i + 1, len(similarity_matrix)):
+                if similarity_matrix[i, j] >= threshold_similaridade:
+                    encoders_similares.append((i, j))
+
+        encoders_filtrados = list(range(len(resultado_geral)))
+        for i, j in encoders_similares:
+            if j in encoders_filtrados:
+                encoders_filtrados.remove(j)
+        encoders_filtrados = [novo_pool[e]['nome'] for e in encoders_filtrados]
+        _ = self.plot_tipo(tipo='pca', resultado_geral=resultado_geral, encoders_filtrados=encoders_filtrados,
+                             pool=novo_pool, diretorio=nm_diretorio)
+
+        x_test = tf.reshape(base_teste_cla.x_test, (-1,) + base_teste_cla.x_test[0].shape)
+        x_train_flat, y_train_flat = np.array(base_treino_cla.x_train), tf.keras.utils.to_categorical(
+            base_treino_cla.y_train, num_classes=2)
+        x_val_flat, y_val_flat = np.array(base_treino_cla.x_val), tf.keras.utils.to_categorical(base_treino_cla.y_val,num_classes=2)
+
+        resultado, resultado_filtro = [], []
+        for p in novo_pool:
+            print(p.get('nome'))
+            encoder = p['modelo']
+
+            if self.classificador == 'SVC':
+                x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
+                classificador = SVC(probability=True, random_state=42)
+                classificador.fit(x_train_encoded, base_treino_cla.y_train)
+                y_pred_enc = encoder.predict(x_test)
+                predicoes = classificador.predict_proba(y_pred_enc)
+            else:
+                if 'TRUE' in self.classificador:
+                    encoder.trainable = True
+                else:
+                    encoder.trainable = False
+                x = encoder.outputs[0]
+                x = layers.Dense(512, activation='relu')(x)
+                x = layers.Dense(256, activation='relu')(x)
+                x = layers.Dense(128, activation='relu')(x)
+                output = layers.Dense(2, activation='softmax', name="segundo_dense")(x)
+
+                early_stopping_callback = EarlyStopping(monitor='val_loss', mode='min', patience=15, verbose=1,
+                                                        restore_best_weights=True, min_delta=0.001)
+
+                new_model = models.Model(inputs=encoder.inputs[0], outputs=output)
+
+                # Compile the new model
+                new_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                                  loss='categorical_crossentropy',
+                                  metrics=['accuracy'])
+
+                new_model.fit(x_train_flat, y_train_flat, epochs=100, validation_data=(x_val_flat, y_val_flat),
+                              callbacks=[early_stopping_callback])
+
+                predicoes = new_model.predict(x_test)
+
+
+            y_pred = np.argmax(predicoes, axis=1)
+            if p['nome'] in encoders_filtrados:
+                resultado_filtro.append(predicoes)
+            resultado.append(predicoes)
+
+        prod = np.product(resultado, axis=0)
+        lista_produto = [np.argmax(x) for x in prod]
+
+        sum = np.sum(resultado, axis=0)
+        lista_soma = [np.argmax(x) for x in sum]
+
+        prod_filtrado = np.product(resultado_filtro, axis=0)
+        lista_produto_filtrado = [np.argmax(x) for x in prod_filtrado]
+
+        sum_filtrado = np.sum(resultado_filtro, axis=0)
+        lista_soma_filtrado = [np.argmax(x) for x in sum_filtrado]
+
+        with open(f"{nm_diretorio}/RESULTADO.txt", "w") as f:
+            f.write(f'TOTAL SOMA: {accuracy_score(base_teste_cla.y_test, lista_soma)}, PRODUTO: {accuracy_score(base_teste_cla.y_test, lista_produto)}\n')
+            f.write(f'FILTRADO: SOMA {accuracy_score(base_teste_cla.y_test, lista_soma_filtrado)}, PRODUTO {accuracy_score(base_teste_cla.y_test, lista_produto_filtrado)}\n')
+
+        return True
+
+
+    def plot_tipo(self, tipo='pca', resultado_geral=None, encoders_filtrados=[], pool=None, diretorio=None):
+        pca = PCA(n_components=2)
+        model_2d = pca.fit_transform([embedding.flatten() for embedding in resultado_geral])
+
+        plt.figure(figsize=(32, 16))
+        plt.scatter(model_2d[:, 0], model_2d[:, 1], c=np.arange(len(pool)), cmap='viridis', s=100)
+        contador = 0
+        for aec in pool:
+            plt.text(model_2d[contador, 0] + 0.01, model_2d[contador, 1] + 0.01, f'Model {aec.get("nome")}',
+                     fontsize=12,
+                     color='#000000' if aec.get('nome') in encoders_filtrados else '#FF0000')
+            contador += 1
+
+        print(f'Encoders restantes ({len(encoders_filtrados)}): {encoders_filtrados}')
+        plt.title(f'Representação dos Modelos {tipo} {len(encoders_filtrados)}): {encoders_filtrados}')
+        plt.xlabel('Componente 1')
+        plt.ylabel('Componente 2')
+        plt.grid(True)
+        plt.savefig(f'{nm_diretorio}/pca.png')
+        return True
+
+    def classificar_antigo(self):
         for autoencoder in self.pool.pool:
             y_pred, predicoes = self.treinar_classificador(encoder=autoencoder.encoder)
             self.resultado.append(predicoes)

@@ -50,12 +50,17 @@ try:
         _ = pool.carregar_pool(tipo='encoder')
         #_ = pool.aplicar_funcao_custo_offline()
         # salvar best weights
-        _ = Classificador(pool=pool).classificar()
+
+        base_test = Base(is_normalizar=True, tipo='unlabeled',
+                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
+        _, _ = base.carregar(is_split_validacao=True)
+
+        _ = Classificador(pool=pool).classificar(base_test=base)
 
     elif tipo == 'reconstruir':
         #base = Base(is_normalizar=True, tipo='labeled', is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_ALVO_TREINO_SEPARADO'), diretorio=f"BASE/{BO.util.util.get_padrao('BASE.DIRETORIO_ALVO_TREINO')}")
         #_, _ = base.carregar()
-        pool = Pool(base=base)
+        pool = Pool(base=base, diretorio=BO.util.util.get_padrao('POOL.DIRETORIO'))
         #_ = pool.visualizar_reconstrucao(15)
         _ = pool.carregar_pool(tipo='autoencoder')
         _ = pool.carregar_imagens_reconstrucao(qtd_imagens_reconstrucao=15)
