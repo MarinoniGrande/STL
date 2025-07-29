@@ -1,5 +1,5 @@
 {
-  "GPU": 0,
+  "GPU": 1,
   "DEBUG": true,
   "SEEDS": {
     "IS_ALEATORIO": false,
@@ -17,15 +17,15 @@
       "Kidney_stone"
     ],
     "INPUT_SHAPE": [224,224,1],
-    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
-    "DIRETORIO_FINETUNNING": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
-    "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
-    "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
-    "IS_DIRETORIO_AEC_SEPARADO": true,
+    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/NAZMUL-CORONAL",
+    "DIRETORIO_FINETUNNING": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "IS_DIRETORIO_AEC_SEPARADO": false,
     "IS_DIRETORIO_TREINO_SEPARADO": false,
-    "IS_DIRETORIO_FINETUNNING_SEPARADO": false,
-    "IS_DIRETORIO_ALVO_TREINO_SEPARADO": false,
-    "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
+    "IS_DIRETORIO_FINETUNNING_SEPARADO": true,
+    "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
+    "IS_DIRETORIO_ALVO_TESTE_SEPARADO": true
   },
   "AUTOENCODER": {
     "SEED_PADRAO": 42,
@@ -70,7 +70,7 @@
     "EPOCAS_PADRAO": 250
   },
   "POOL": {
-    "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/YILDRIM_224_100/SLA",
+    "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/NAZMULCORONAL_224_100/SLA",
     "IS_FINETUNNING": true,
     "FINETUNNING_QTD_EPOCAS": 100,
     "QUANTIDADE": 100,
@@ -84,7 +84,7 @@
   "CLASSIFICADOR": {
     "QTD_ESTIMATORS": 150,
     "ESTIMADOR": "DECISIONTREE",
-    "CLASSIFICADOR": "CNN_NAO",
+    "CLASSIFICADOR": "CNN_FALSE",
     "ESTRATEGIA": "MULTI"
   }
 }
