@@ -233,7 +233,7 @@ class Classificador:
                 x = layers.Dense(512, activation='relu')(x)
                 x = layers.Dense(256, activation='relu')(x)
                 x = layers.Dense(128, activation='relu')(x)
-                output = layers.Dense(2, activation='softmax', name="segundo_dense")(x)
+                output = layers.Dense(len(get_padrao('BASE.LABELS')), activation='softmax', name="segundo_dense")(x)
 
                 early_stopping_callback = EarlyStopping(monitor='val_loss', mode='min', patience=15, verbose=1,
                                                         restore_best_weights=True, min_delta=0.001)
