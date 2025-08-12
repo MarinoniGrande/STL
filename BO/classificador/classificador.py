@@ -210,8 +210,8 @@ class Classificador:
         print('5')
         x_test = tf.reshape(base_teste_cla.x_test, (-1,) + base_teste_cla.x_test[0].shape)
         x_train_flat, y_train_flat = np.array(base_treino_cla.x_train), tf.keras.utils.to_categorical(
-            base_treino_cla.y_train, num_classes=2)
-        x_val_flat, y_val_flat = np.array(base_treino_cla.x_val), tf.keras.utils.to_categorical(base_treino_cla.y_val,num_classes=2)
+            base_treino_cla.y_train, num_classes=len(get_padrao('BASE.LABELS')))
+        x_val_flat, y_val_flat = np.array(base_treino_cla.x_val), tf.keras.utils.to_categorical(base_treino_cla.y_val,num_classes=len(get_padrao('BASE.LABELS')))
 
         resultado, resultado_filtro = [], []
         for p in novo_pool:
@@ -355,8 +355,8 @@ class Classificador:
 
             plt.figure(figsize=(8, 6))
             cm = confusion_matrix(self.base_teste.y_test, y_pred)
-            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Normal', 'Kidney_stone'],
-                        yticklabels=['Normal', 'Kidney_stone'])
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=get_padrao('BASE.LABELS'),
+                        yticklabels=get_padrao('BASE.LABELS'))
             plt.xlabel("Predicted Label")
             plt.ylabel("True Label")
             plt.savefig(f"{nm_diretorio}/MATRIZ_CONFUSAO.png")
