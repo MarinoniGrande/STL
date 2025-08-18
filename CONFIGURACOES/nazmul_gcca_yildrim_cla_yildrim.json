@@ -21,7 +21,7 @@
     "DIRETORIO_FINETUNNING": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
     "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
     "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
-    "IS_DIRETORIO_AEC_SEPARADO": false,
+    "IS_DIRETORIO_AEC_SEPARADO": true,
     "IS_DIRETORIO_TREINO_SEPARADO": false,
     "IS_DIRETORIO_FINETUNNING_SEPARADO": true,
     "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
@@ -84,7 +84,7 @@
   "CLASSIFICADOR": {
     "QTD_ESTIMATORS": 150,
     "ESTIMADOR": "DECISIONTREE",
-    "CLASSIFICADOR": "SVC",
+    "CLASSIFICADOR": "CNN_FALSE",
     "ESTRATEGIA": "MULTI"
   }
 }

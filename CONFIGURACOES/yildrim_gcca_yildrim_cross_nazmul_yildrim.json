@@ -70,7 +70,7 @@
     "EPOCAS_PADRAO": 250
   },
   "POOL": {
-    "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/CIFAR_224_100/SLA",
+    "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/YILDRIM_224_100/SLA",
     "IS_FINETUNNING": true,
     "FINETUNNING_QTD_EPOCAS": 100,
     "QUANTIDADE": 100,
