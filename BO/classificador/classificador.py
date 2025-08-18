@@ -169,7 +169,7 @@ class Classificador:
         os.makedirs(f'{nm_diretorio}', exist_ok=True)
 
         print('1')
-        imagens_reconstrucao = np.array(base_test.x_train[:40])
+        imagens_reconstrucao = np.array(base_test.x_train[:40]) # alteracao para finetunnig na mesma base
         lista_predicoes, novo_pool = self.carregar_vetores(pool=self.pool.pool, imagens_reconstrucao=imagens_reconstrucao)
 
         n_components = int(min([l.shape[0] for l in lista_predicoes] + [l.shape[1] for l in lista_predicoes]))
