@@ -245,7 +245,7 @@ class Classificador:
                                   loss='categorical_crossentropy',
                                   metrics=['accuracy'])
 
-                new_model.fit(x_train_flat, y_train_flat, epochs=100, validation_data=(x_val_flat, y_val_flat),
+                new_model.fit(x_train_flat, y_train_flat, epochs=150, validation_data=(x_val_flat, y_val_flat),
                               callbacks=[early_stopping_callback])
 
                 predicoes = new_model.predict(x_test)
