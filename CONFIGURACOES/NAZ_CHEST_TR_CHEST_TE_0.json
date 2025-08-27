@@ -21,7 +21,7 @@
     "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
     "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/CHEST_XRAY",
     "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/CHEST_XRAY",
-    "IS_DIRETORIO_TREINO_SEPARADO": true,
+    "IS_DIRETORIO_TREINO_SEPARADO": false,
     "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
     "IS_DIRETORIO_ALVO_TESTE_SEPARADO": true
   },
