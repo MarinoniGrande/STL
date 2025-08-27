@@ -38,7 +38,8 @@ BO.util.util.configurar_reprodutibilidade()
 
 BO.util.util.criar_processo(tipo=tipo)
 
-base = Base(is_normalizar=True, tipo='unlabeled', diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True)
+base = Base(is_normalizar=True, tipo='unlabeled',
+                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
 _ , _ = base.carregar()
 
 try:
@@ -54,9 +55,9 @@ try:
 
         base_test = Base(is_normalizar=True, tipo='unlabeled',
                     diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
-        _, _ = base.carregar(is_split_validacao=True)
+        _, _ = base_test.carregar(is_split_validacao=True)
 
-        _ = Classificador(pool=pool).classificar(base_test=base)
+        _ = Classificador(pool=pool).classificar(base_test=base_test)
 
     elif tipo == 'reconstruir':
         #base = Base(is_normalizar=True, tipo='labeled', is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_ALVO_TREINO_SEPARADO'), diretorio=f"BASE/{BO.util.util.get_padrao('BASE.DIRETORIO_ALVO_TREINO')}")

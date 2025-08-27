@@ -76,7 +76,10 @@ def configurar_reprodutibilidade():
         import tensorflow as tf
         import cv2
         import keras
+        import torch
 
+        torch.cuda.manual_seed(get_padrao('SEEDS.TORCH'))  # Current GPU
+        torch.cuda.manual_seed_all(get_padrao('SEEDS.TORCH'))  # All GPUs (if using multi-GPU)
         np.random.seed(get_padrao('SEEDS.NUMPY'))
         random.seed(get_padrao('SEEDS.NUMPY'))
         tf.random.set_seed(get_padrao('SEEDS.TENSORFLOW'))
