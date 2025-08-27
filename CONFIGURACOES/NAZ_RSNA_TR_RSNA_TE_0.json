@@ -18,7 +18,7 @@
       "PNEUMONIA"
     ],
     "INPUT_SHAPE": [224,224,1],
-    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/RSNA",
+    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
     "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/RSNA",
     "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/RSNA",
     "IS_DIRETORIO_TREINO_SEPARADO": true,
