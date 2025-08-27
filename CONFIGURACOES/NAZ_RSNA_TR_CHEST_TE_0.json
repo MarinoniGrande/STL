@@ -14,8 +14,8 @@
   },
   "BASE": {
     "LABELS": [
-      "Normal",
-      "Kidney_stone"
+      "NORMAL",
+      "PNEUMONIA"
     ],
     "INPUT_SHAPE": [224,224,1],
     "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/RSNA",
