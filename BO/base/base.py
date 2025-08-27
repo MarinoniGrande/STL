@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from sklearn.model_selection import train_test_split
 import torch
-from fastai.vision.all import TensorImage, Rotate, Zoom, RandomResizedCropGPU, Tensor
+
 from BO.util.util import get_padrao
 
 
@@ -123,6 +123,7 @@ class Base:
         return self.x, self.y
 
     def augmentar_base(self, qtd_augmentar=2):
+        from fastai.vision.all import TensorImage, Rotate, Zoom, RandomResizedCropGPU, Tensor
         if len(self.x_train) > 0:
             base_augmentar = self.x_train
             resultado_augmentar = self.y_train
