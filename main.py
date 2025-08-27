@@ -39,7 +39,7 @@ BO.util.util.configurar_reprodutibilidade()
 BO.util.util.criar_processo(tipo=tipo)
 
 base = Base(is_normalizar=True, tipo='unlabeled',
-                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
+                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
 _ , _ = base.carregar()
 
 try:
@@ -54,7 +54,7 @@ try:
         # salvar best weights
 
         base_test = Base(is_normalizar=True, tipo='unlabeled',
-                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=True, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
+                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
         _, _ = base_test.carregar(is_split_validacao=True)
 
         _ = Classificador(pool=pool).classificar(base_test=base_test)
