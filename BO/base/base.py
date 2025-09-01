@@ -122,8 +122,8 @@ class Base:
 
         return self.x, self.y
 
-    def augmentar_base(self, qtd_augmentar=2):
-        from fastai.vision.all import TensorImage, Rotate, Zoom, RandomResizedCropGPU, Tensor
+    def augmentar_base(self, qtd_augmentar=3):
+        from fastai.vision.all import TensorImage, Rotate, Zoom, RandomResizedCropGPU, Tensor, Flip
         if len(self.x_train) > 0:
             base_augmentar = self.x_train
             resultado_augmentar = self.y_train
@@ -141,8 +141,10 @@ class Base:
         for i in range(1, qtd_augmentar + 1):
             rot = Rotate()
             zm = Zoom()
+            flp = Flip()
             rsc = RandomResizedCropGPU(size, min_scale=0.75)
             dummy_labels = torch.zeros(len(tensor_batch)).long()
+            tensor_batch = flp(tensor_batch)
             tensor_batch = rot(tensor_batch)
             tensor_batch = zm(tensor_batch)
             tensor_batch, _ = rsc((tensor_batch, dummy_labels))
