@@ -17,6 +17,12 @@ from mvlearn.embed import GCCA
 
 from sklearn.decomposition import PCA
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
+from sklearn.calibration import CalibratedClassifierCV
+
 
 class Classificador:
     def __init__(self, pool=None):
@@ -223,8 +229,23 @@ class Classificador:
         for p in novo_pool:
             print(p.id)
             encoder = p.encoder
+            if self.classificador == 'PIPELINE':
+                x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
 
-            if self.classificador == 'SVC':
+                pipe = Pipeline([
+                    ("scaler", StandardScaler()),
+                    ("pca", PCA(n_components=0.95, svd_solver="full")),
+                    ("svc", SVC(kernel="rbf", C=10, gamma=0.01, class_weight="balanced",
+                                probability=False, cache_size=1000, random_state=42))
+                ])
+                pipe.fit(x_train_encoded, base_treino_cla.y_train)
+
+                y_pred_enc = encoder.predict(x_test)
+                cal = CalibratedClassifierCV(pipe, method="isotonic", cv=5)
+                cal.fit(x_train_encoded, base_treino_cla.y_train)
+                predicoes = cal.predict_proba(y_pred_enc)
+
+            elif self.classificador == 'SVC':
                 x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
                 classificador = SVC(probability=True, random_state=42)
                 classificador.fit(x_train_encoded, base_treino_cla.y_train)
