@@ -187,7 +187,7 @@ class Classificador:
         similarity_matrix = np.corrcoef([embedding.flatten() for embedding in resultado_geral])
         # print(similarity_matrix)
 
-        threshold_similaridade = 0.7
+        threshold_similaridade = get_padrao('POOL.VALOR_CUSTO_THRESHOLD_OFFLINE')
         # similarity_matrix = cosine_similarity(encoder_vectors)
         # Optional: plot similarity matrix
 
