@@ -14,12 +14,6 @@ from BO.metrics.metrics import PerfTimer, build_report, save_metrics_report
 
 BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 
-# === start metrics timer ===
-_timer = PerfTimer().__enter__()   # manual enter so we can close in finally
-
-_error_trace = None
-
-
 
 gpus = tf.config.list_physical_devices('GPU')
 print(f'Encontrado {len(gpus)} GPU{"S" if len(gpus) > 1 else ""}')
@@ -39,6 +33,12 @@ if gpus:
 
     except RuntimeError as e:
         print(e)
+
+# === start metrics timer ===
+_timer = PerfTimer().__enter__()   # manual enter so we can close in finally
+
+_error_trace = None
+
 
 print(f'Utilizado {usado} GPU{"S" if len(gpus) > 1 else ""}')
 
