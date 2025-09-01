@@ -90,13 +90,13 @@ except Exception as e:
     with open(f'RESULTADOS/{BO.util.util.NOME_PROCESSO}/erro.txt', 'w') as f:
         f.write(str(e))
 
- # finish timer & write metrics regardless of success/failure
-    PerfTimer.__exit__(_timer, None, None, None)
+# finish timer & write metrics regardless of success/failure
+PerfTimer.__exit__(_timer, None, None, None)
 
-    report = build_report(
-        _timer,
-        notes="Métricas pós-execução (CPU, RAM, disco, rede, GPU, pacotes).",
-        error=_error_trace,
-    )
-    path = save_metrics_report(os.path.join("RESULTADOS", BO.util.util.NOME_PROCESSO), report, filename="METRICAS.json")
-    print(f"[METRICS] Report saved to: {path}")
+report = build_report(
+    _timer,
+    notes="Métricas pós-execução (CPU, RAM, disco, rede, GPU, pacotes).",
+    error=_error_trace,
+)
+path = save_metrics_report(os.path.join("RESULTADOS", BO.util.util.NOME_PROCESSO), report, filename="METRICAS.json")
+print(f"[METRICS] Report saved to: {path}")
