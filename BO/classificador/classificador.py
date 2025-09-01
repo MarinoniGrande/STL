@@ -214,6 +214,12 @@ class Classificador:
         x_val_flat, y_val_flat = np.array(base_treino_cla.x_val), tf.keras.utils.to_categorical(base_treino_cla.y_val,num_classes=len(get_padrao('BASE.LABELS')))
 
         resultado, resultado_filtro = [], []
+
+        accs_por_encoder = []
+        accs_por_encoder_filtrados = []
+        encoder_ids = []
+        encoder_ids_filtrados = []
+
         for p in novo_pool:
             print(p.id)
             encoder = p.encoder
@@ -255,6 +261,17 @@ class Classificador:
             if p.id in encoders_filtrados:
                 resultado_filtro.append(predicoes)
             resultado.append(predicoes)
+
+            # === ADDED: track IDs and per-encoder accuracy ===
+            encoder_ids.append(p.id)
+            if p.id in encoders_filtrados:
+                encoder_ids_filtrados.append(p.id)
+
+            acc_i = accuracy_score(base_teste_cla.y_test, y_pred)
+            accs_por_encoder.append((p.id, float(acc_i)))
+            if p.id in encoders_filtrados:
+                accs_por_encoder_filtrados.append((p.id, float(acc_i)))
+
         print('6')
         prod = np.product(resultado, axis=0)
         lista_produto = [np.argmax(x) for x in prod]
@@ -271,9 +288,68 @@ class Classificador:
         with open(f"{nm_diretorio}/RESULTADO.txt", "w") as f:
             f.write(f'TOTAL SOMA: {accuracy_score(base_teste_cla.y_test, lista_soma)}, PRODUTO: {accuracy_score(base_teste_cla.y_test, lista_produto)}\n')
             f.write(f'FILTRADO: SOMA {accuracy_score(base_teste_cla.y_test, lista_soma_filtrado)}, PRODUTO {accuracy_score(base_teste_cla.y_test, lista_produto_filtrado)}\n')
+
+            # === ADDED: per-encoder accuracies ===
+            f.write("\n=== ACURÁCIA POR ENCODER (TODOS) ===\n")
+            for enc_id, acc in sorted(accs_por_encoder, key=lambda x: x[1], reverse=True):
+                f.write(f"encoder_id={enc_id} | acc={acc:.6f}\n")
+
+            f.write("\n=== ACURÁCIA POR ENCODER (FILTRADOS) ===\n")
+            if accs_por_encoder_filtrados:
+                for enc_id, acc in sorted(accs_por_encoder_filtrados, key=lambda x: x[1], reverse=True):
+                    f.write(f"encoder_id={enc_id} | acc={acc:.6f}\n")
+            else:
+                f.write("(vazio)\n")
+
+            # === ADDED: lists of encoder IDs ===
+            f.write("\n=== LISTA DE ENCODERS (TODOS) ===\n")
+            f.write(", ".join(map(str, encoder_ids)) + "\n")
+
+            f.write("\n=== LISTA DE ENCODERS (FILTRADOS) ===\n")
+            f.write((", ".join(map(str, encoder_ids_filtrados)) + "\n") if encoder_ids_filtrados else "(vazio)\n")
+
+            # === ADDED: statistics over per-encoder accuracies ===
+            stats_total = self._resumo_stats([acc for _, acc in accs_por_encoder])
+            stats_filtrado = self._resumo_stats([acc for _, acc in accs_por_encoder_filtrados])
+
+            f.write("\n=== ESTATÍSTICAS (TODOS) ===\n")
+            if stats_total:
+                for k, v in stats_total.items():
+                    f.write(f"{k}: {v}\n")
+            else:
+                f.write("sem dados\n")
+
+            f.write("\n=== ESTATÍSTICAS (FILTRADOS) ===\n")
+            if stats_filtrado:
+                for k, v in stats_filtrado.items():
+                    f.write(f"{k}: {v}\n")
+            else:
+                f.write("sem dados\n")
+
         print('7')
         return True
 
+    def _resumo_stats(self,vals):
+        arr = np.asarray(vals, dtype=float)
+        if arr.size == 0:
+            return None
+        media = float(np.mean(arr))
+        std = float(np.std(arr, ddof=1)) if arr.size > 1 else 0.0
+        mediana = float(np.median(arr))
+        mad = float(np.median(np.abs(arr - mediana)))  # Median Absolute Deviation
+        mean_abs_dev = float(np.mean(np.abs(arr - media)))  # Desvio Médio Absoluto
+        minimo = float(np.min(arr))
+        maximo = float(np.max(arr))
+        return {
+            "count": int(arr.size),
+            "mean": media,
+            "std": std,
+            "median": mediana,
+            "MAD": mad,
+            "mean_abs_dev": mean_abs_dev,
+            "min": minimo,
+            "max": maximo,
+        }
 
     def plot_tipo(self, tipo='pca', resultado_geral=None, encoders_filtrados=[], pool=None, diretorio=None):
         pca = PCA(n_components=2)

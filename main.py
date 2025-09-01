@@ -10,8 +10,16 @@ from BO.base.base import Base
 from BO.pool.pool import Pool
 from BO.classificador.classificador import Classificador
 import tensorflow as tf
+from BO.metrics.metrics import PerfTimer, build_report, save_metrics_report
 
 BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
+
+# === start metrics timer ===
+_timer = PerfTimer().__enter__()   # manual enter so we can close in finally
+
+_error_trace = None
+
+
 
 gpus = tf.config.list_physical_devices('GPU')
 print(f'Encontrado {len(gpus)} GPU{"S" if len(gpus) > 1 else ""}')
@@ -81,3 +89,14 @@ try:
 except Exception as e:
     with open(f'RESULTADOS/{BO.util.util.NOME_PROCESSO}/erro.txt', 'w') as f:
         f.write(str(e))
+
+ # finish timer & write metrics regardless of success/failure
+    PerfTimer.__exit__(_timer, None, None, None)
+
+    report = build_report(
+        _timer,
+        notes="Métricas pós-execução (CPU, RAM, disco, rede, GPU, pacotes).",
+        error=_error_trace,
+    )
+    path = save_metrics_report(os.path.join("RESULTADOS", BO.util.util.NOME_PROCESSO), report, filename="METRICAS.json")
+    print(f"[METRICS] Report saved to: {path}")
