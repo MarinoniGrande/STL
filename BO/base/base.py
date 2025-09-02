@@ -138,11 +138,10 @@ class Base:
 
         resize_tfms = Resize(512, method="squish")
         tensor_resized = torch.stack([resize_tfms(TensorImage(img)) for img in tensor_stack])
-
-        tensor_batch = TensorImage(tensor_resized)
         lista_augmentation = []
         resultado_augmentation = []
         for i in range(1, qtd_augmentar + 1):
+            tensor_batch = TensorImage(tensor_resized)
             rot = Rotate()
             zm = Zoom()
             #flp = Flip()
