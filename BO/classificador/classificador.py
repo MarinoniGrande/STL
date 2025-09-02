@@ -295,8 +295,7 @@ class Classificador:
                 cal.fit(X_tr, y_tr)
 
                 # 4) Predict calibrated probabilities on test latents
-                proba_te = cal.predict_proba(X_te)[:, 1]
-                predicoes = encoder.predict(x_test)
+                predicoes = cal.predict_proba(X_te)[:, 1]
 
             elif self.classificador == 'SVC':
                 x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
