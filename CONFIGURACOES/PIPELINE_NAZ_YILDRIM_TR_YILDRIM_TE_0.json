@@ -18,11 +18,11 @@
       "Kidney_stone"
     ],
     "INPUT_SHAPE": [224,224,1],
-    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
-    "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
-    "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
-    "IS_DIRETORIO_TREINO_SEPARADO": false,
-    "IS_DIRETORIO_ALVO_TREINO_SEPARADO": false,
+    "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+    "IS_DIRETORIO_TREINO_SEPARADO": true,
+    "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
     "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
   },
   "AUTOENCODER": {
@@ -74,10 +74,10 @@
     "QUANTIDADE": 100,
     "MODELAGEM": "SLA",
     "FUNCAO_CUSTO_OFFLINE": "GCCA",
-    "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.95,
+    "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.80,
     "VALOR_CUSTO_THRESHOLD_ONLINE": 0.5,
     "FUNCAO_CUSTO_ONLINE": "SSIM",
-    "QTD_IMAGENS_RECONSTRUCAO": 30
+    "QTD_IMAGENS_RECONSTRUCAO": 45
   },
   "CLASSIFICADOR": {
     "QTD_ESTIMATORS": 150,
