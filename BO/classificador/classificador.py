@@ -22,7 +22,8 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 from sklearn.calibration import CalibratedClassifierCV
-
+from sklearn.preprocessing import StandardScaler, Normalizer
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
 
 class Classificador:
     def __init__(self, pool=None):
@@ -244,6 +245,58 @@ class Classificador:
                 cal = CalibratedClassifierCV(pipe, method="isotonic", cv=5)
                 cal.fit(x_train_encoded, base_treino_cla.y_train)
                 predicoes = cal.predict_proba(y_pred_enc)
+
+            elif self.classificador == 'PIPELINE+':
+                x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
+                X_tr = x_train_encoded  # latent vectors (n_samples, n_features)
+                y_tr = base_treino_cla.y_train
+                X_te = encoder.predict(x_test)  # latents for test set
+
+                # 1) Define a strong base pipeline (normalize -> (optional PCA) -> SVC)
+                base_pipe = Pipeline([
+                    ("scaler", StandardScaler(with_mean=True, with_std=True)),
+                    ("norm", Normalizer(norm="l2")),  # helps on latents
+                    ("pca", PCA(n_components=0.95, whiten=True)),  # will be tuned (possibly disabled)
+                    ("svc", SVC(kernel="rbf", probability=False, class_weight="balanced",
+                                cache_size=1000, random_state=42))
+                ])
+
+                # 2) Search space — include option to skip PCA by passing None via "passthrough"
+                param_grid = [
+                    {
+                        "pca": [PCA(n_components=0.95, whiten=True),
+                                PCA(n_components=0.99, whiten=True),
+                                "passthrough"],
+                        "svc__C": [0.5, 1, 3, 10, 30, 100],
+                        "svc__gamma": ["scale", "auto", 1e-3, 3e-3, 1e-2]
+                    }
+                ]
+                inner_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+                grid = GridSearchCV(
+                    estimator=base_pipe,
+                    param_grid=param_grid,
+                    scoring="roc_auc",  # optimize for ranking quality
+                    cv=inner_cv,
+                    n_jobs=-1,
+                    refit=True,
+                    verbose=0
+                )
+                grid.fit(X_tr, y_tr)
+
+                #best_pipe = grid.best_estimator_
+
+                # 3) Calibrate probabilities with CV (no peeking at test)
+                # Use sigmoid if sample size is modest; isotonic if you have lots of data.
+                cal = CalibratedClassifierCV(
+                    #base_estimator=best_pipe,
+                    method="sigmoid",  # try "isotonic" if you have enough data
+                    cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+                )
+                cal.fit(X_tr, y_tr)
+
+                # 4) Predict calibrated probabilities on test latents
+                proba_te = cal.predict_proba(X_te)[:, 1]
+                predicoes = encoder.predict(x_test)
 
             elif self.classificador == 'SVC':
                 x_train_encoded = encoder.predict(x_train_flat, batch_size=16)
