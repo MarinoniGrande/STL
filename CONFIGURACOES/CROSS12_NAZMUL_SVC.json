@@ -23,12 +23,12 @@
             224,
             1
         ],
-        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/PNEUMONIA/RSNA",
-        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/PNEUMONIA/RSNA",
-        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/PNEUMONIA/CHEST",
-        "IS_DIRETORIO_TREINO_SEPARADO": true,
-        "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
-        "IS_DIRETORIO_ALVO_TESTE_SEPARADO": true
+        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
+        "IS_DIRETORIO_TREINO_SEPARADO": false,
+        "IS_DIRETORIO_ALVO_TREINO_SEPARADO": false,
+        "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
     },
     "AUTOENCODER": {
         "SEED_PADRAO": 42,
