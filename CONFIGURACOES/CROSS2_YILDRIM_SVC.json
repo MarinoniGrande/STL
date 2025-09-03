@@ -1,5 +1,6 @@
 {
     "GPU": 1,
+    "NOME_PROCESSO": "CROSS2_YILDRIM_SVC",
     "DEBUG": true,
     "SEEDS": {
         "IS_ALEATORIO": true,

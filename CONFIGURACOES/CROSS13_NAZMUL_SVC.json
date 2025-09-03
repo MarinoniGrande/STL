@@ -1,5 +1,6 @@
 {
     "GPU": 1,
+    "NOME_PROCESSO": "CROSS13_NAZMUL_SVC",
     "DEBUG": true,
     "SEEDS": {
         "IS_ALEATORIO": true,

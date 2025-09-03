@@ -1,5 +1,6 @@
 {
     "GPU": 1,
+    "NOME_PROCESSO": "CROSS10_CIFAR_PIPELINE",
     "DEBUG": true,
     "SEEDS": {
         "IS_ALEATORIO": true,
