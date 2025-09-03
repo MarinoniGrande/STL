@@ -14,6 +14,8 @@ from BO.metrics.metrics import PerfTimer, build_report, save_metrics_report
 
 BO.util.util.ARQUIVO_CONFIGURACOES, tipo = sys.argv[1], sys.argv[2]
 
+if BO.util.util.get_padrao('NOME_PROCESSO') is not None:
+    BO.util.util.NOME_PROCESSO = BO.util.util.get_padrao('NOME_PROCESSO')
 
 gpus = tf.config.list_physical_devices('GPU')
 print(f'Encontrado {len(gpus)} GPU{"S" if len(gpus) > 1 else ""}')
