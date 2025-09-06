@@ -176,17 +176,17 @@ class Base:
         :param arquivo: Path completa do arquivo
         :return: Objeto Arquivo tratado
         """
-        arq = cv2.imread(arquivo)
+        #arq = cv2.imread(arquivo)
 
 
-        # if self.input_shape[2] == 1:
-        #     arq = cv2.imread(arquivo, cv2.IMREAD_GRAYSCALE)
-        # else:
-        #     arq = cv2.imread(arquivo)
-        #     arq = cv2.cvtColor(arq, cv2.COLOR_BGR2RGB)
+        if self.input_shape[2] == 1:
+            arq = cv2.imread(arquivo, cv2.IMREAD_GRAYSCALE)
+        else:
+            arq = cv2.imread(arquivo)
+            arq = cv2.cvtColor(arq, cv2.COLOR_BGR2RGB)
 
-        #arq = cv2.resize(arq, (self.input_shape[0], self.input_shape[1]), interpolation=cv2.INTER_AREA)
-        #arq = np.reshape(arq, self.input_shape)
+        arq = cv2.resize(arq, (self.input_shape[0], self.input_shape[1]), interpolation=cv2.INTER_AREA)
+        arq = np.reshape(arq, self.input_shape)
         return arq
 
     def visualizar_tamanhos(self):

@@ -50,9 +50,9 @@ BO.util.util.configurar_reprodutibilidade()
 
 BO.util.util.criar_processo(tipo=tipo)
 
-base = Base(is_normalizar=True, tipo='unlabeled',
-                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
-_ , _ = base.carregar()
+# base = Base(is_normalizar=True, tipo='unlabeled',
+#                     diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
+# _ , _ = base.carregar()
 
 try:
     if tipo == 'criar':
