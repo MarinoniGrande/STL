@@ -101,9 +101,10 @@ try:
             else:  # move
                 shutil.move(str(src_path), str(out_path))
 
-
+        print('iniciando')
         ensure_dirs()
         for cls in CLASSES:
+            print(cls)
             imgs = collect_images(cls)
             if not imgs:
                 print(f"No images found for {cls}")
