@@ -23,10 +23,10 @@
             224,
             1
         ],
-        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_JUNTO",
-        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
-        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
-        "IS_DIRETORIO_TREINO_SEPARADO": false,
+        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_NICOLAS",
+        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_NICOLAS",
+        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_NICOLAS",
+        "IS_DIRETORIO_TREINO_SEPARADO": true,
         "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
         "IS_DIRETORIO_ALVO_TESTE_SEPARADO": true
     },
@@ -77,7 +77,7 @@
         "EPOCAS_PADRAO": 250
     },
     "POOL": {
-        "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/CIFAR_224_100/SLA",
+        "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/YILDRIM_224_100/SLA",
         "IS_FINETUNNING": true,
         "FINETUNNING_QTD_EPOCAS": 150,
         "QUANTIDADE": 100,
