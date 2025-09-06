@@ -50,77 +50,14 @@ BO.util.util.configurar_reprodutibilidade()
 
 BO.util.util.criar_processo(tipo=tipo)
 
-# base = Base(is_normalizar=True, tipo='unlabeled',
-#                     diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
-# _ , _ = base.carregar()
+base = Base(is_normalizar=True, tipo='unlabeled',
+                    diretorio=f"{BO.util.util.get_padrao('BASE.DIRETORIO_TREINO')}", is_augmentation=False, is_base_separada=BO.util.util.get_padrao('BASE.IS_DIRETORIO_TREINO_SEPARADO'))
+_ , _ = base.carregar()
 
 try:
     if tipo == 'criar':
         _ = Pool(base=base).criar()
 
-    elif tipo == 'arquivo':
-        from pathlib import Path
-        import shutil
-        from sklearn.model_selection import train_test_split
-
-        SRC = Path("/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM")
-        DST = Path("/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM_NICOLAS")
-        CLASSES = ["Kidney_stone", "Normal"]
-        TEST_SIZE = 0.30
-        SEED = 42
-        MODE = "copy"  # copy | move
-
-        EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
-
-
-        def collect_images(class_name: str):
-            imgs = []
-            for split in ["Train", "Test"]:
-                d = SRC / split / class_name
-                if d.exists():
-                    imgs.extend([p for p in d.rglob("*") if p.is_file() and p.suffix.lower() in EXTS])
-            return imgs
-
-
-        def ensure_dirs():
-            for split in ["Train", "Test"]:
-                for cls in CLASSES:
-                    (DST / split / cls).mkdir(parents=True, exist_ok=True)
-
-
-        def place(src_path: Path, out_dir: Path):
-            out_path = out_dir / src_path.name
-            if out_path.exists():
-                stem, suf = out_path.stem, out_path.suffix
-                k = 1
-                while out_path.exists():
-                    out_path = out_path.with_name(f"{stem}__dup{k}{suf}")
-                    k += 1
-            if MODE == "copy":
-                shutil.copy2(src_path, out_path)
-            else:  # move
-                shutil.move(str(src_path), str(out_path))
-
-        print('iniciando')
-        ensure_dirs()
-        for cls in CLASSES:
-            print(cls)
-            imgs = collect_images(cls)
-            if not imgs:
-                print(f"No images found for {cls}")
-                continue
-
-            # sklearn split
-            train_files, test_files = train_test_split(
-                imgs, test_size=TEST_SIZE, random_state=11
-            )
-
-            for f in train_files:
-                place(f, DST / "Train" / cls)
-            for f in test_files:
-                place(f, DST / "Test" / cls)
-
-            print(f"{cls}: {len(train_files)} train, {len(test_files)} test")
 
 
     elif tipo == 'classificar':
