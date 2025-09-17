@@ -284,6 +284,14 @@ class Autoencoder(AutoencoderConfiguracao):
         model_carregado.load_weights(weights_path, skip_mismatch=True)
         if tipo == 'encoder':
             self.encoder = model_carregado
+
+            arquivo_json_aut = open(json_path.replace('encoder.json', 'autoencoder.json'), 'r')
+            model_json_carregado_aut = arquivo_json_aut.read()
+            arquivo_json_aut.close()
+            model_carregado_aut = model_from_json(model_json_carregado_aut)
+            model_carregado_aut.load_weights(weights_path.replace('encoder.weights', 'autoencoder.weights'), skip_mismatch=True)
+            self.autoencoder = model_carregado_aut
+
         else:
             self.autoencoder = model_carregado
 
