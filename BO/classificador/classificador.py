@@ -255,40 +255,42 @@ class Classificador:
         if get_padrao('POOL.FUNCAO_CUSTO_ONLINE') in ['SSIM']:
             lista_predicoes_ssim, novo_pool_ssim = self.carregar_vetores_ssim(pool=self.pool.pool,
                                                                               imagens_reconstrucao=imagens_reconstrucao)
+            if len(lista_predicoes_ssim) > 0:
+                n_components_ssim = int(min([l.shape[0] for l in lista_predicoes_ssim] + [l.shape[1] for l in lista_predicoes_ssim]))
+                print('2.1')
+                gcca = GCCA(n_components=n_components_ssim - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
+                gcca.fit(lista_predicoes_ssim)
+                resultado_geral_ssim = gcca.transform(lista_predicoes_ssim)
+                print('3.1')
+                similarity_matrix_ssim = np.corrcoef([embedding.flatten() for embedding in resultado_geral_ssim])
+                # print(similarity_matrix)
 
-            n_components_ssim = int(min([l.shape[0] for l in lista_predicoes_ssim] + [l.shape[1] for l in lista_predicoes_ssim]))
-            print('2.1')
-            gcca = GCCA(n_components=n_components_ssim - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
-            gcca.fit(lista_predicoes_ssim)
-            resultado_geral_ssim = gcca.transform(lista_predicoes_ssim)
-            print('3.1')
-            similarity_matrix_ssim = np.corrcoef([embedding.flatten() for embedding in resultado_geral_ssim])
-            # print(similarity_matrix)
+                threshold_similaridade_ssim = get_padrao('POOL.VALOR_CUSTO_THRESHOLD_OFFLINE')
+                # similarity_matrix = cosine_similarity(encoder_vectors)
+                # Optional: plot similarity matrix
 
-            threshold_similaridade_ssim = get_padrao('POOL.VALOR_CUSTO_THRESHOLD_OFFLINE')
-            # similarity_matrix = cosine_similarity(encoder_vectors)
-            # Optional: plot similarity matrix
+                plt.figure(figsize=(18, 9))
+                sns.heatmap(similarity_matrix, annot=True, cmap='coolwarm',
+                            xticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))],
+                            yticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))])
+                plt.title("Encoder w/ SSIM Similarity")
 
-            plt.figure(figsize=(18, 9))
-            sns.heatmap(similarity_matrix, annot=True, cmap='coolwarm',
-                        xticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))],
-                        yticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))])
-            plt.title("Encoder w/ SSIM Similarity")
+                plt.savefig(f'{nm_diretorio}/similaridade_ssim.png')
+                # plt.show()
+                print('4')
+                encoders_similares_ssim = []
+                for i in range(len(similarity_matrix_ssim)):
+                    for j in range(i + 1, len(similarity_matrix_ssim)):
+                        if similarity_matrix_ssim[i, j] >= threshold_similaridade_ssim:
+                            encoders_similares_ssim.append((i, j))
 
-            plt.savefig(f'{nm_diretorio}/similaridade_ssim.png')
-            # plt.show()
-            print('4')
-            encoders_similares_ssim = []
-            for i in range(len(similarity_matrix_ssim)):
-                for j in range(i + 1, len(similarity_matrix_ssim)):
-                    if similarity_matrix_ssim[i, j] >= threshold_similaridade_ssim:
-                        encoders_similares_ssim.append((i, j))
-
-            encoders_filtrados_ssim = list(range(len(resultado_geral_ssim)))
-            for i, j in encoders_similares_ssim:
-                if j in encoders_filtrados_ssim:
-                    encoders_filtrados_ssim.remove(j)
-            encoders_filtrados_ssim = [novo_pool[e].id for e in encoders_filtrados_ssim]
+                encoders_filtrados_ssim = list(range(len(resultado_geral_ssim)))
+                for i, j in encoders_similares_ssim:
+                    if j in encoders_filtrados_ssim:
+                        encoders_filtrados_ssim.remove(j)
+                encoders_filtrados_ssim = [novo_pool[e].id for e in encoders_filtrados_ssim]
+            else:
+                encoders_filtrados_ssim = []
 
 
         print('5')
