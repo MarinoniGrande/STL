@@ -160,7 +160,7 @@ class Classificador:
             for img in imagens_reconstrucao:
                 vlr_ssim = tf_img.ssim(imagens_reconstruidas[contador], img, max_val=1.0).numpy()
                 vlrs_ssim.append(vlr_ssim)
-                print(vlr_ssim)
+                #print(vlr_ssim)
                 soma_ssim += vlr_ssim
                 contador += 1
 
@@ -255,7 +255,7 @@ class Classificador:
         if get_padrao('POOL.FUNCAO_CUSTO_ONLINE') in ['SSIM']:
             lista_predicoes_ssim, novo_pool_ssim = self.carregar_vetores_ssim(pool=self.pool.pool,
                                                                               imagens_reconstrucao=imagens_reconstrucao)
-            if len(lista_predicoes_ssim) > 0:
+            if len(lista_predicoes_ssim) > 1:
                 n_components_ssim = int(min([l.shape[0] for l in lista_predicoes_ssim] + [l.shape[1] for l in lista_predicoes_ssim]))
                 print('2.1')
                 gcca = GCCA(n_components=n_components_ssim - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
@@ -288,9 +288,9 @@ class Classificador:
                 for i, j in encoders_similares_ssim:
                     if j in encoders_filtrados_ssim:
                         encoders_filtrados_ssim.remove(j)
-                encoders_filtrados_ssim = [novo_pool[e].id for e in encoders_filtrados_ssim]
+                encoders_filtrados_ssim = [novo_pool_ssim[e].id for e in encoders_filtrados_ssim]
             else:
-                encoders_filtrados_ssim = []
+                encoders_filtrados_ssim = [novo_pool_ssim[e].id for e in novo_pool_ssim]
 
 
         print('5')
