@@ -14,7 +14,7 @@ from sklearn.svm import SVC
 from BO.util.util import get_padrao, NOME_PROCESSO
 from BO.base.base import Base
 from mvlearn.embed import GCCA
-
+import tensorflow.image as tf_img
 from sklearn.decomposition import PCA
 
 from sklearn.preprocessing import StandardScaler
@@ -149,6 +149,38 @@ class Classificador:
 
         return y_pred, predicoes
 
+    def carregar_vetores_ssim(self, pool=None, imagens_reconstrucao=None):
+        novo_pool = []
+        lista_predicoes = []
+        for enc in pool:
+            contador = 0
+            imagens_reconstruidas = enc.autoencoder.predict(imagens_reconstrucao)
+            soma_ssim = 0
+            vlrs_ssim = []
+            for img in imagens_reconstrucao:
+                vlr_ssim = tf_img.ssim(imagens_reconstruidas[contador], img, max_val=1.0).numpy()
+                vlrs_ssim.append(vlr_ssim)
+                print(vlr_ssim)
+                soma_ssim += vlr_ssim
+                contador += 1
+
+            print(round(soma_ssim / len(self.imagens_reconstrucao), 2), get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'))
+            if round(soma_ssim/len(self.imagens_reconstrucao),2) >= get_padrao('POOL.VALOR_CUSTO_THRESHOLD_ONLINE'):
+                modelo = enc.encoder
+                # print(f'enc {enc.get("nome")}')
+                predicoes = modelo.predict(imagens_reconstrucao)
+
+                is_reconstrucao = True
+                for p in predicoes:
+                    if np.sum(p) == 0:
+                        is_reconstrucao = False
+
+                if is_reconstrucao:
+                    novo_pool.append(enc)
+                    lista_predicoes.append(predicoes)
+
+        return lista_predicoes, novo_pool
+
     def carregar_vetores(self, pool=None, imagens_reconstrucao=None):
         lista_predicoes = []
         novo_pool = []
@@ -178,6 +210,7 @@ class Classificador:
         print('1')
         imagens_reconstrucao = np.array(base_test.x_train[:40]) # alteracao para finetunnig na mesma base
         lista_predicoes, novo_pool = self.carregar_vetores(pool=self.pool.pool, imagens_reconstrucao=imagens_reconstrucao)
+
 
         n_components = int(min([l.shape[0] for l in lista_predicoes] + [l.shape[1] for l in lista_predicoes]))
         print('2')
@@ -214,18 +247,64 @@ class Classificador:
         encoders_filtrados = [novo_pool[e].id for e in encoders_filtrados]
         _ = self.plot_tipo(tipo='pca', resultado_geral=resultado_geral, encoders_filtrados=encoders_filtrados,
                              pool=novo_pool, diretorio=nm_diretorio)
+
+
+
+        # encoders similares gcca
+        encoders_filtrados_ssim = []
+        if get_padrao('POOL.FUNCAO_CUSTO_ONLINE') in ['SSIM']:
+            lista_predicoes_ssim, novo_pool_ssim = self.carregar_vetores_ssim(pool=self.pool.pool,
+                                                                              imagens_reconstrucao=imagens_reconstrucao)
+
+            n_components_ssim = int(min([l.shape[0] for l in lista_predicoes_ssim] + [l.shape[1] for l in lista_predicoes_ssim]))
+            print('2.1')
+            gcca = GCCA(n_components=n_components_ssim - 1)  # `k` must be an integer satisfying `0 < k < min(A.shape)`.
+            gcca.fit(lista_predicoes_ssim)
+            resultado_geral_ssim = gcca.transform(lista_predicoes_ssim)
+            print('3.1')
+            similarity_matrix_ssim = np.corrcoef([embedding.flatten() for embedding in resultado_geral_ssim])
+            # print(similarity_matrix)
+
+            threshold_similaridade_ssim = get_padrao('POOL.VALOR_CUSTO_THRESHOLD_OFFLINE')
+            # similarity_matrix = cosine_similarity(encoder_vectors)
+            # Optional: plot similarity matrix
+
+            plt.figure(figsize=(18, 9))
+            sns.heatmap(similarity_matrix, annot=True, cmap='coolwarm',
+                        xticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))],
+                        yticklabels=[f'Enc {novo_pool[i].id}' for i in range(len(resultado_geral_ssim))])
+            plt.title("Encoder w/ SSIM Similarity")
+
+            plt.savefig(f'{nm_diretorio}/similaridade_ssim.png')
+            # plt.show()
+            print('4')
+            encoders_similares_ssim = []
+            for i in range(len(similarity_matrix_ssim)):
+                for j in range(i + 1, len(similarity_matrix_ssim)):
+                    if similarity_matrix_ssim[i, j] >= threshold_similaridade_ssim:
+                        encoders_similares_ssim.append((i, j))
+
+            encoders_filtrados_ssim = list(range(len(resultado_geral_ssim)))
+            for i, j in encoders_similares_ssim:
+                if j in encoders_filtrados_ssim:
+                    encoders_filtrados_ssim.remove(j)
+            encoders_filtrados_ssim = [novo_pool[e].id for e in encoders_filtrados_ssim]
+
+
         print('5')
         x_test = tf.reshape(base_teste_cla.x_test, (-1,) + base_teste_cla.x_test[0].shape)
         x_train_flat, y_train_flat = np.array(base_treino_cla.x_train), tf.keras.utils.to_categorical(
             base_treino_cla.y_train, num_classes=len(get_padrao('BASE.LABELS')))
         x_val_flat, y_val_flat = np.array(base_treino_cla.x_val), tf.keras.utils.to_categorical(base_treino_cla.y_val,num_classes=len(get_padrao('BASE.LABELS')))
 
-        resultado, resultado_filtro = [], []
+        resultado, resultado_filtro, resultado_filtro_ssim = [], [], []
 
         accs_por_encoder = []
         accs_por_encoder_filtrados = []
+        accs_por_encoder_filtrados_ssim = []
         encoder_ids = []
         encoder_ids_filtrados = []
+        encoder_ids_filtrados_ssim = []
 
         for p in novo_pool:
             print(p.id)
@@ -333,6 +412,10 @@ class Classificador:
             y_pred = np.argmax(predicoes, axis=1)
             if p.id in encoders_filtrados:
                 resultado_filtro.append(predicoes)
+
+            if p.id in encoders_filtrados_ssim:
+                resultado_filtro_ssim.append(predicoes)
+
             resultado.append(predicoes)
 
             # === ADDED: track IDs and per-encoder accuracy ===
@@ -340,10 +423,16 @@ class Classificador:
             if p.id in encoders_filtrados:
                 encoder_ids_filtrados.append(p.id)
 
+            if p.id in encoders_filtrados_ssim:
+                encoder_ids_filtrados_ssim.append(p.id)
+
             acc_i = accuracy_score(base_teste_cla.y_test, y_pred)
             accs_por_encoder.append((p.id, float(acc_i)))
             if p.id in encoders_filtrados:
                 accs_por_encoder_filtrados.append((p.id, float(acc_i)))
+
+            if p.id in encoders_filtrados_ssim:
+                accs_por_encoder_filtrados_ssim.append((p.id, float(acc_i)))
 
         print('6')
         prod = np.product(resultado, axis=0)
@@ -357,6 +446,12 @@ class Classificador:
 
         sum_filtrado = np.sum(resultado_filtro, axis=0)
         lista_soma_filtrado = [np.argmax(x) for x in sum_filtrado]
+
+        prod_filtrado_ssim = np.product(resultado_filtro_ssim, axis=0)
+        lista_produto_filtrado_ssim = [np.argmax(x) for x in prod_filtrado]
+
+        sum_filtrado_ssim = np.sum(resultado_filtro_ssim, axis=0)
+        lista_soma_filtrado_ssim = [np.argmax(x) for x in sum_filtrado]
 
         with open(f"{nm_diretorio}/RESULTADO.txt", "w") as f:
             f.write(f'TOTAL SOMA: {accuracy_score(base_teste_cla.y_test, lista_soma)}, PRODUTO: {accuracy_score(base_teste_cla.y_test, lista_produto)}\n')
@@ -374,6 +469,13 @@ class Classificador:
             else:
                 f.write("(vazio)\n")
 
+            f.write("\n=== ACURÁCIA POR ENCODER (SSIM FILTRADOS) ===\n")
+            if accs_por_encoder_filtrados_ssim:
+                for enc_id, acc in sorted(accs_por_encoder_filtrados_ssim, key=lambda x: x[1], reverse=True):
+                    f.write(f"encoder_id={enc_id} | acc={acc:.6f}\n")
+            else:
+                f.write("(vazio)\n")
+
             # === ADDED: lists of encoder IDs ===
             f.write("\n=== LISTA DE ENCODERS (TODOS) ===\n")
             f.write(", ".join(map(str, encoder_ids)) + "\n")
@@ -381,9 +483,14 @@ class Classificador:
             f.write("\n=== LISTA DE ENCODERS (FILTRADOS) ===\n")
             f.write((", ".join(map(str, encoder_ids_filtrados)) + "\n") if encoder_ids_filtrados else "(vazio)\n")
 
+            f.write("\n=== LISTA DE ENCODERS (SSIM FILTRADOS) ===\n")
+            f.write((", ".join(map(str, encoder_ids_filtrados_ssim)) + "\n") if encoder_ids_filtrados_ssim else "(vazio)\n")
+
             # === ADDED: statistics over per-encoder accuracies ===
             stats_total = self._resumo_stats([acc for _, acc in accs_por_encoder])
             stats_filtrado = self._resumo_stats([acc for _, acc in accs_por_encoder_filtrados])
+            stats_filtrado_ssim = self._resumo_stats([acc for _, acc in accs_por_encoder_filtrados_ssim])
+
 
             f.write("\n=== ESTATÍSTICAS (TODOS) ===\n")
             if stats_total:
@@ -399,30 +506,40 @@ class Classificador:
             else:
                 f.write("sem dados\n")
 
+            f.write("\n=== ESTATÍSTICAS (FILTRADOS SSIM) ===\n")
+            if stats_filtrado_ssim:
+                for k, v in stats_filtrado_ssim.items():
+                    f.write(f"{k}: {v}\n")
+            else:
+                f.write("sem dados\n")
+
         print('7')
         return True
 
     def _resumo_stats(self,vals):
-        arr = np.asarray(vals, dtype=float)
-        if arr.size == 0:
+        try:
+            arr = np.asarray(vals, dtype=float)
+            if arr.size == 0:
+                return None
+            media = float(np.mean(arr))
+            std = float(np.std(arr, ddof=1)) if arr.size > 1 else 0.0
+            mediana = float(np.median(arr))
+            mad = float(np.median(np.abs(arr - mediana)))  # Median Absolute Deviation
+            mean_abs_dev = float(np.mean(np.abs(arr - media)))  # Desvio Médio Absoluto
+            minimo = float(np.min(arr))
+            maximo = float(np.max(arr))
+            return {
+                "count": int(arr.size),
+                "mean": media,
+                "std": std,
+                "median": mediana,
+                "MAD": mad,
+                "mean_abs_dev": mean_abs_dev,
+                "min": minimo,
+                "max": maximo,
+            }
+        except:
             return None
-        media = float(np.mean(arr))
-        std = float(np.std(arr, ddof=1)) if arr.size > 1 else 0.0
-        mediana = float(np.median(arr))
-        mad = float(np.median(np.abs(arr - mediana)))  # Median Absolute Deviation
-        mean_abs_dev = float(np.mean(np.abs(arr - media)))  # Desvio Médio Absoluto
-        minimo = float(np.min(arr))
-        maximo = float(np.max(arr))
-        return {
-            "count": int(arr.size),
-            "mean": media,
-            "std": std,
-            "median": mediana,
-            "MAD": mad,
-            "mean_abs_dev": mean_abs_dev,
-            "min": minimo,
-            "max": maximo,
-        }
 
     def plot_tipo(self, tipo='pca', resultado_geral=None, encoders_filtrados=[], pool=None, diretorio=None):
         pca = PCA(n_components=2)

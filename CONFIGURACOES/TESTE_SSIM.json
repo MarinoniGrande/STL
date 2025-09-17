@@ -1,6 +1,6 @@
 {
     "GPU": 1,
-    "NOME_PROCESSO": "CROSS12_NAZMUL_SVC",
+    "NOME_PROCESSO": "TESTE_SSIM",
     "DEBUG": true,
     "SEEDS": {
         "IS_ALEATORIO": true,
@@ -15,20 +15,20 @@
     },
     "BASE": {
         "LABELS": [
-            "PNEUMONIA",
-            "NORMAL"
+            "Normal",
+            "Kidney_stone"
         ],
         "INPUT_SHAPE": [
             224,
             224,
             1
         ],
-        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/PNEUMONIA/RSNA",
-        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/PNEUMONIA/RSNA",
-        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/PNEUMONIA/CHEST",
-        "IS_DIRETORIO_TREINO_SEPARADO": true,
-        "IS_DIRETORIO_ALVO_TREINO_SEPARADO": true,
-        "IS_DIRETORIO_ALVO_TESTE_SEPARADO": true
+        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "IS_DIRETORIO_TREINO_SEPARADO": false,
+        "IS_DIRETORIO_ALVO_TREINO_SEPARADO": false,
+        "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
     },
     "AUTOENCODER": {
         "SEED_PADRAO": 42,
@@ -77,10 +77,10 @@
         "EPOCAS_PADRAO": 250
     },
     "POOL": {
-        "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/NAZMULCORONAL_224_100/SLA",
+        "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/CIFAR_224_100/SLA",
         "IS_FINETUNNING": true,
         "FINETUNNING_QTD_EPOCAS": 150,
-        "QUANTIDADE": 100,
+        "QUANTIDADE": 10,
         "MODELAGEM": "SLA",
         "FUNCAO_CUSTO_OFFLINE": "GCCA",
         "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.85,
@@ -91,7 +91,7 @@
     "CLASSIFICADOR": {
         "QTD_ESTIMATORS": 150,
         "ESTIMADOR": "DECISIONTREE",
-        "CLASSIFICADOR": "SVC",
+        "CLASSIFICADOR": "PIPELINE",
         "ESTRATEGIA": "MULTI"
     }
 }
