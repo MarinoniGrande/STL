@@ -447,15 +447,29 @@ class Classificador:
         sum_filtrado = np.sum(resultado_filtro, axis=0)
         lista_soma_filtrado = [np.argmax(x) for x in sum_filtrado]
 
-        prod_filtrado_ssim = np.product(resultado_filtro_ssim, axis=0)
-        lista_produto_filtrado_ssim = [np.argmax(x) for x in prod_filtrado]
+        try:
+            prod_filtrado_ssim = np.product(resultado_filtro_ssim, axis=0)
+            lista_produto_filtrado_ssim = [np.argmax(x) for x in prod_filtrado_ssim]
 
-        sum_filtrado_ssim = np.sum(resultado_filtro_ssim, axis=0)
-        lista_soma_filtrado_ssim = [np.argmax(x) for x in sum_filtrado]
+            sum_filtrado_ssim = np.sum(resultado_filtro_ssim, axis=0)
+            lista_soma_filtrado_ssim = [np.argmax(x) for x in sum_filtrado_ssim]
+        except:
+            prod_filtrado_ssim = None
+            lista_produto_filtrado_ssim = None
+            sum_filtrado_ssim = None
+            lista_soma_filtrado_ssim = None
 
         with open(f"{nm_diretorio}/RESULTADO.txt", "w") as f:
             f.write(f'TOTAL SOMA: {accuracy_score(base_teste_cla.y_test, lista_soma)}, PRODUTO: {accuracy_score(base_teste_cla.y_test, lista_produto)}\n')
             f.write(f'FILTRADO: SOMA {accuracy_score(base_teste_cla.y_test, lista_soma_filtrado)}, PRODUTO {accuracy_score(base_teste_cla.y_test, lista_produto_filtrado)}\n')
+
+            if lista_soma_filtrado_ssim is not None:
+                f.write(
+                    f'FILTRADO: SOMA SSIM {accuracy_score(base_teste_cla.y_test, lista_soma_filtrado_ssim)}, PRODUTO {accuracy_score(base_teste_cla.y_test, lista_produto_filtrado_ssim)}\n')
+            else:
+                f.write(
+                    f'FILTRADO: SOMA SSIM --, PRODUTO --\n')
+
 
             # === ADDED: per-encoder accuracies ===
             f.write("\n=== ACURÁCIA POR ENCODER (TODOS) ===\n")
