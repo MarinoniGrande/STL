@@ -71,6 +71,7 @@ def configurar_reprodutibilidade():
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
         os.environ['TF_CUDNN_DETERMINISTIC'] = 'true'
         os.environ['TF_DETERMINISTIC_OPS'] = 'true'
+        os.environ["TF_DETERMINISTIC_OPS"] = "1"
 
         import numpy as np
         import tensorflow as tf
