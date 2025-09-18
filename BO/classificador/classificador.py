@@ -290,7 +290,7 @@ class Classificador:
                         encoders_filtrados_ssim.remove(j)
                 encoders_filtrados_ssim = [novo_pool_ssim[e].id for e in encoders_filtrados_ssim]
             else:
-                encoders_filtrados_ssim = [novo_pool_ssim[e].id for e in novo_pool_ssim]
+                encoders_filtrados_ssim = [e.id for e in novo_pool_ssim]
 
 
         print('5')
