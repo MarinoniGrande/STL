@@ -1,0 +1,97 @@
+{
+    "GPU": 1,
+    "NOME_PROCESSO": "NAZMUL_YILDRIM_SVC_80",
+    "DEBUG": true,
+    "SEEDS": {
+        "IS_ALEATORIO": true,
+        "BASE": 11,
+        "CLASSIFICADOR": 11,
+        "RANDOM": 11,
+        "NUMPY": 11,
+        "TENSORFLOW": 11,
+        "OPENCV": 11,
+        "KERAS": 11,
+        "TORCH": 11
+    },
+    "BASE": {
+        "LABELS": [
+            "PNEUMONIA",
+            "NORMAL"
+        ],
+        "INPUT_SHAPE": [
+            224,
+            224,
+            1
+        ],
+        "DIRETORIO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/YILDRIM",
+        "DIRETORIO_ALVO_TREINO": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "DIRETORIO_ALVO_TESTE": "/home/aghochuli/ngrande/data/base/LITIASE/NAZMUL-CORONAL",
+        "IS_DIRETORIO_TREINO_SEPARADO": true,
+        "IS_DIRETORIO_ALVO_TREINO_SEPARADO": false,
+        "IS_DIRETORIO_ALVO_TESTE_SEPARADO": false
+    },
+    "AUTOENCODER": {
+        "SEED_PADRAO": 42,
+        "SEED_RANDOM_INI": 0,
+        "SEED_RANDOM_FIM": 10000,
+        "VETOR_LATENTE_PADRAO": 300,
+        "VETOR_LATENTE_RANDOM_INI": 100,
+        "VETOR_LATENTE_RANDOM_FIM": 400,
+        "LAYERS_RANDOM_INI": 2,
+        "LAYERS_RANDOM_FIM": 10,
+        "LAYERS_RANDOM": [
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128,
+            256
+        ],
+        "EPOCAS_RANDOM_INI": 300,
+        "EPOCAS_RANDOM_FIM": 500,
+        "NR_LAYERS_PADRAO": 5,
+        "FILTROS_PADRAO": [
+            128,
+            64,
+            256,
+            64,
+            128
+        ],
+        "KERNEL_SIZE_PADRAO": [
+            3,
+            3
+        ],
+        "ACTIVATION_PADRAO": "relu",
+        "STRIDES_PADRAO": [
+            1,
+            1,
+            1,
+            1,
+            1
+        ],
+        "PADDING_PADRAO": "same",
+        "KERNEL_INITIALIZER_PADRAO": "he_uniform",
+        "OUTPUT_ACTIVATION_PADRAO": "linear",
+        "EPOCAS_PADRAO": 250
+    },
+    "POOL": {
+        "DIRETORIO": "/home/aghochuli/ngrande/STL/AUTOENCODERS/YILDRIM_224_100/SLA",
+        "IS_FINETUNNING": true,
+        "FINETUNNING_QTD_EPOCAS": 150,
+        "QUANTIDADE": 100,
+        "MODELAGEM": "SLA",
+        "FUNCAO_CUSTO_OFFLINE": "GCCA",
+        "VALOR_CUSTO_THRESHOLD_OFFLINE": 0.8,
+        "VALOR_CUSTO_THRESHOLD_ONLINE": 0.5,
+        "FUNCAO_CUSTO_ONLINE": "SSIM",
+        "QTD_IMAGENS_RECONSTRUCAO": 45
+    },
+    "CLASSIFICADOR": {
+        "QTD_ESTIMATORS": 150,
+        "ESTIMADOR": "DECISIONTREE",
+        "CLASSIFICADOR": "SVC",
+        "ESTRATEGIA": "MULTI"
+    }
+}
