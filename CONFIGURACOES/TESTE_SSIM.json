@@ -1,6 +1,6 @@
 {
     "GPU": 1,
-    "NOME_PROCESSO": "TESTE_SSIM",
+    "NOME_PROCESSO": "TESTE_SSIM2",
     "DEBUG": true,
     "SEEDS": {
         "IS_ALEATORIO": true,
