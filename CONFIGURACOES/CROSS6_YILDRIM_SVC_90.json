@@ -15,8 +15,8 @@
     },
     "BASE": {
         "LABELS": [
-            "PNEUMONIA",
-            "NORMAL"
+            "Normal",
+            "Kidney_stone"
         ],
         "INPUT_SHAPE": [
             224,
